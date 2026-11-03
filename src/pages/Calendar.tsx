@@ -274,7 +274,9 @@ export default function CalendarPage({ now, language }: Props) {
     else setCursor(addDays(cursor, direction * 7));
   }
   function openNew(date = cursor) {
-    const start = new Date(date); start.setHours(9, 0, 0, 0);
+    const start = new Date(date);
+    if (start.getHours() === 0 && start.getMinutes() === 0) start.setHours(9, 0, 0, 0);
+    else start.setSeconds(0, 0);
     const end = new Date(start); end.setHours(end.getHours() + 1);
     setEditing({ id: '', title: '', description: '', start: localInput(start), end: localInput(end), category: 'study', priority: 'medium', color: categoryColors.study, location: '', subject: '', reminder: 'none', repeat: 'none', completed: false, createdAt: '' });
     setModalOpen(true);
