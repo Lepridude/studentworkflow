@@ -97,8 +97,14 @@ function toTask(event: CalendarEvent, linked?: Task): Task {
 }
 
 export function syncCalendarEventToTask(event: CalendarEvent): CalendarEvent {
-  if (event.source === 'external' || event.category !== 'deadline') return event;
+  if (event.source === 'external') return event;
   const tasks = loadTasks();
+  if (event.category !== 'deadline') {
+    const linked = tasks.find(task => task.id === event.linkedTaskId || task.calendarEventId === event.id);
+    if (linked) saveTasks(tasks.filter(task => task.id !== linked.id));
+    const { linkedTaskId: _linkedTaskId, ...unlinkedEvent } = event;
+    return unlinkedEvent;
+  }
   const linked = tasks.find(task =>
     task.id === event.linkedTaskId
     || task.calendarEventId === event.id
@@ -115,7 +121,13 @@ export function syncCalendarEventsToTasks(events: CalendarEvent[]): CalendarEven
   const nextTasks = [...tasks];
 
   const linkedEvents = events.map(event => {
-    if (event.source === 'external' || event.category !== 'deadline') return event;
+    if (event.source === 'external') return event;
+    if (event.category !== 'deadline') {
+      const linked = nextTasks.find(task => task.id === event.linkedTaskId || task.calendarEventId === event.id);
+      if (linked) nextTasks.splice(nextTasks.findIndex(task => task.id === linked.id), 1);
+      const { linkedTaskId: _linkedTaskId, ...unlinkedEvent } = event;
+      return unlinkedEvent;
+    }
 
     const linked = nextTasks.find(task =>
       task.id === event.linkedTaskId
