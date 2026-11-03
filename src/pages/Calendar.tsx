@@ -33,6 +33,20 @@ function occurrences(events: CalendarEvent[], from: Date, to: Date): { event: Ca
     }
     let cursor = new Date(base);
     const monthDay = base.getDate();
+    if (cursor < from) {
+      if (event.repeat === 'daily') {
+        const jumps = Math.max(0, Math.floor((from.getTime() - cursor.getTime()) / DAY) - 1);
+        cursor.setDate(cursor.getDate() + jumps);
+      } else if (event.repeat === 'weekly') {
+        const jumps = Math.max(0, Math.floor((from.getTime() - cursor.getTime()) / (7 * DAY)) - 1);
+        cursor.setDate(cursor.getDate() + jumps * 7);
+      } else {
+        const months = Math.max(0, (from.getFullYear() - cursor.getFullYear()) * 12 + from.getMonth() - cursor.getMonth() - 1);
+        const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + months, 1);
+        const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+        cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(monthDay, lastDay), base.getHours(), base.getMinutes());
+      }
+    }
     let guard = 0;
     while (cursor < to && guard++ < 500) {
       const end = new Date(cursor.getTime() + duration);
@@ -193,7 +207,7 @@ export default function CalendarPage({ now, language }: Props) {
     <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.color || categoryColors[item.event.category] } as CSSProperties}
       onClick={() => { setEditing(item.event); setModalOpen(true); }} draggable onDragStart={e => e.dataTransfer.setData('text/event-id', item.event.id)}>
       <span className="cal-event-time">{item.start.toLocaleTimeString(language === 'ru' ? 'ru-RU' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-      <span className="cal-event-name">{item.event.title}</span>{!compact && item.event.category === 'deadline' && <span className="cal-event-tag">{item.event.completed ? t.done : t.deadline}</span>}
+      <span className="cal-event-name">{item.event.title}</span>{!compact && item.event.category === 'deadline' && <span className="cal-event-tag">{item.event.completed ? t.done : item.start.getTime() < now.getTime() ? t.overdue : item.start.getTime() - now.getTime() < DAY ? t.dueSoon : t.deadline}</span>}
     </button>
   );
 
