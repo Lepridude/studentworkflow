@@ -224,7 +224,7 @@ export default function CalendarPage({ now, language }: Props) {
   const weekDays = Array.from({ length: view === 'day' ? 1 : 7 }, (_, i) => addDays(view === 'day' ? cursor : range.from, i));
   const eventForDay = (day: Date) => visible.filter(x => dateKey(x.start) === dateKey(day));
   const renderEvent = (item: { event: CalendarEvent; start: Date; end: Date }) => (
-    <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.color || categoryColors[item.event.category] } as CSSProperties}
+    <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.completed ? '#16a34a' : item.event.color || categoryColors[item.event.category] } as CSSProperties}
       onClick={() => { setEditing(item.event); setModalOpen(true); }} draggable onDragStart={e => e.dataTransfer.setData('text/event-id', item.event.id)}>
       <span className="cal-event-time">{item.start.toLocaleTimeString(language === 'ru' ? 'ru-RU' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
       <span className="cal-event-name">{item.event.title}</span>{item.event.category === 'deadline' && <span className="cal-event-tag">{item.event.completed ? t.done : item.start.getTime() < now.getTime() ? t.overdue : item.start.getTime() - now.getTime() < DAY ? t.dueSoon : t.deadline}</span>}
