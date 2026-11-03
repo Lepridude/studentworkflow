@@ -8,14 +8,15 @@ import type { NewTaskInput, Task } from '../types/task';
 import { loadTasks, saveTasks } from '../storage';
 import { computeStats, newId } from '../utils/tasks';
 import { greetingFor } from '../utils/dates';
+import { removeCalendarEventForTask, syncTasksToCalendar } from '../taskCalendarSync';
 import type { AppLanguage } from '../settings';
 type Props = { now: Date; userName: string; language: AppLanguage };
 export default function Dashboard({ now, userName, language }: Props) {
  const [tasks, setTasks] = useState<Task[]>(loadTasks); const [modalOpen, setModalOpen] = useState(false);
- useEffect(() => { saveTasks(tasks); }, [tasks]);
+ useEffect(() => { saveTasks(tasks); syncTasksToCalendar(tasks); }, [tasks]);
  const stats = useMemo(() => computeStats(tasks, now), [tasks, now]);
  const toggleTask = useCallback((id: string) => { setTasks((prev) => prev.map((task) => task.id === id ? { ...task, status: task.status === 'done' ? 'todo' : 'done' } : task)); }, []);
- const deleteTask = useCallback((id: string) => { setTasks((prev) => prev.filter((task) => task.id !== id)); }, []);
+ const deleteTask = useCallback((id: string) => { removeCalendarEventForTask(id); setTasks((prev) => prev.filter((task) => task.id !== id)); }, []);
  const addTask = useCallback((input: NewTaskInput) => { const task: Task = { id: newId(), title: input.title, description: input.description, subject: '', dueDate: input.dueDate, priority: input.priority, status: 'todo', createdAt: new Date().toISOString() }; setTasks((prev) => [task, ...prev]); setModalOpen(false); }, []);
  const openCount = stats.total - stats.done; const ru = language === 'ru';
  const greeting = ru ? (now.getHours() >= 5 && now.getHours() < 12 ? 'Доброе утро' : now.getHours() >= 12 && now.getHours() < 18 ? 'Добрый день' : now.getHours() >= 18 && now.getHours() < 23 ? 'Добрый вечер' : 'Доброй ночи') : greetingFor(now);
