@@ -97,7 +97,7 @@ function toTask(event: CalendarEvent, linked?: Task): Task {
 }
 
 export function syncCalendarEventToTask(event: CalendarEvent): CalendarEvent {
-  if (event.source === 'external') return event;
+  if (event.source === 'external' || event.category !== 'deadline') return event;
   const tasks = loadTasks();
   const linked = tasks.find(task =>
     task.id === event.linkedTaskId
@@ -115,7 +115,7 @@ export function syncCalendarEventsToTasks(events: CalendarEvent[]): CalendarEven
   const nextTasks = [...tasks];
 
   const linkedEvents = events.map(event => {
-    if (event.source === 'external') return event;
+    if (event.source === 'external' || event.category !== 'deadline') return event;
 
     const linked = nextTasks.find(task =>
       task.id === event.linkedTaskId
