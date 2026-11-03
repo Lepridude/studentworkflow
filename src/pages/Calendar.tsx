@@ -8,7 +8,6 @@ type View = 'month' | 'week' | 'day' | 'agenda';
 const DAY = 86400000;
 const pad = (n: number) => String(n).padStart(2, '0');
 const dateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const fromKey = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const localInput = (d: Date) => `${dateKey(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
@@ -76,7 +75,7 @@ function parseICS(text: string): CalendarEventInput[] {
     if (!m) return '';
     return `${m[1]}-${m[2]}-${m[3]}T${m[4] || '09'}:${m[5] || '00'}`;
   };
-  return blocks.map((block) => {
+  return blocks.map((block): CalendarEventInput => {
     const get = (key: string) => block.match(new RegExp('^' + key + '(?:;[^:]*)?:(.*)$', 'm'))?.[1]?.replace(/\\n/g, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';') || '';
     const start = parseDate(get('DTSTART')); const end = parseDate(get('DTEND')) || start;
     const cat = get('CATEGORIES') as CalendarCategory;
