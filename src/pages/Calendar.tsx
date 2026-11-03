@@ -253,7 +253,7 @@ export default function CalendarPage({ now, language }: Props) {
         <div className="time-body"><div className="time-labels">{Array.from({ length: 24 }, (_, i) => <div key={i}>{pad(i)}:00</div>)}</div>
           {weekDays.map(day => <div className="time-day" key={dateKey(day)} onDragOver={e => e.preventDefault()} onDrop={e => { const id = e.dataTransfer.getData('text/event-id'); if (id) moveEvent(id, day); }}>
             {Array.from({ length: 15 }, (_, i) => <button className="time-slot" key={i} aria-label={`${dateKey(day)} ${i + 7}:00`} onClick={() => { const d = new Date(day); d.setHours(i + 7, 0, 0, 0); openNew(d); }} />)}
-            {eventForDay(day).map(item => { const top = (item.start.getHours() + item.start.getMinutes() / 60) * 56; const height = Math.max(28, (item.end.getTime() - item.start.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item, true)}</div>; })}
+            {eventForDay(day).map(item => { const top = (item.start.getHours() + item.start.getMinutes() / 60) * 56; const height = Math.max(28, (item.end.getTime() - item.start.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item)}</div>; })}
           </div>)}
         </div>
       </div></div>}
