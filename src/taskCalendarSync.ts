@@ -99,6 +99,7 @@ function toTask(event: CalendarEvent, linked?: Task): Task {
 }
 
 export function syncCalendarEventToTask(event: CalendarEvent): CalendarEvent {
+  if (event.source === 'external') return event;
   const tasks = loadTasks();
   const linked = tasks.find(task =>
     task.id === event.linkedTaskId
