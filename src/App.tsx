@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Sidebar, { type PageId } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
+import CalendarPage from './pages/Calendar';
 import { loadUserSettings, saveUserSettings, type UserSettings } from './settings';
 
 export default function App() {
@@ -33,6 +34,8 @@ export default function App() {
         <main className="content">
           {page === 'dashboard' ? (
             <Dashboard now={now} userName={settings.name} language={settings.language} />
+          ) : page === 'calendar' ? (
+            <CalendarPage now={now} language={settings.language} />
           ) : page === 'settings' ? (
             <div className="page">
               <div className="page-head">
