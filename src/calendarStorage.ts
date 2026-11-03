@@ -30,6 +30,9 @@ function isValidEvent(value: unknown): value is CalendarEvent {
     && (event.customReminderMinutes === undefined
       || (Number.isInteger(event.customReminderMinutes) && event.customReminderMinutes > 0))
     && REPEATS.includes(event.repeat as RepeatRule)
+    && (event.repeatInterval === undefined || (Number.isInteger(event.repeatInterval) && event.repeatInterval >= 1))
+    && (event.repeatCount === undefined || (Number.isInteger(event.repeatCount) && event.repeatCount >= 1))
+    && (event.repeatUntil === undefined || (typeof event.repeatUntil === 'string' && Number.isFinite(new Date(event.repeatUntil).getTime())))
     && typeof event.completed === 'boolean'
     && typeof event.createdAt === 'string'
     && (event.linkedTaskId === undefined || typeof event.linkedTaskId === 'string')
