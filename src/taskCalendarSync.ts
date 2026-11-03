@@ -116,6 +116,8 @@ export function syncCalendarEventsToTasks(events: CalendarEvent[]): CalendarEven
   const nextTasks = [...tasks];
 
   const linkedEvents = events.map(event => {
+    if (event.source === 'external') return event;
+
     const linked = nextTasks.find(task =>
       task.id === event.linkedTaskId
       || task.calendarEventId === event.id
