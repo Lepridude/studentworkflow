@@ -138,6 +138,12 @@ export function syncCalendarEventsToTasks(events: CalendarEvent[]): CalendarEven
 }
 
 export function removeTaskForCalendarEvent(event: CalendarEvent): void {
-  if (!event.linkedTaskId) return;
-  saveTasks(loadTasks().filter(task => task.id !== event.linkedTaskId));
+  const tasks = loadTasks();
+  const linked = tasks.find(task =>
+    task.id === event.linkedTaskId
+    || task.calendarEventId === event.id
+    || event.id === `task-${task.id}`
+  );
+  if (!linked) return;
+  saveTasks(tasks.filter(task => task.id !== linked.id));
 }
