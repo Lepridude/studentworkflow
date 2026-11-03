@@ -92,6 +92,8 @@ export default function CalendarPage({ now, language }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [subjectFilter, setSubjectFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [onlyDeadlines, setOnlyDeadlines] = useState(false);
   const [query, setQuery] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -137,13 +139,17 @@ export default function CalendarPage({ now, language }: Props) {
   const visible = useMemo(() => occurrences(events, range.from, range.to).filter(({ event }) => {
     if (categoryFilter !== 'all' && event.category !== categoryFilter) return false;
     if (priorityFilter !== 'all' && event.priority !== priorityFilter) return false;
+    if (subjectFilter !== 'all' && event.subject !== subjectFilter) return false;
+    if (statusFilter === 'completed' && !event.completed) return false;
+    if (statusFilter === 'active' && event.completed) return false;
+    if (statusFilter === 'overdue' && (event.completed || event.category !== 'deadline' || new Date(event.start) >= now)) return false;
     if (onlyDeadlines && event.category !== 'deadline') return false;
     if (query && !(event.title + ' ' + event.description + ' ' + event.subject).toLowerCase().includes(query.toLowerCase())) return false;
     const day = dateKey(new Date(event.start));
     if (dateFrom && day < dateFrom) return false;
     if (dateTo && day > dateTo) return false;
     return true;
-  }), [events, range, categoryFilter, priorityFilter, onlyDeadlines, query, dateFrom, dateTo]);
+  }), [events, range, categoryFilter, priorityFilter, subjectFilter, statusFilter, onlyDeadlines, query, dateFrom, dateTo, now]);
   const title = view === 'month'
     ? cursor.toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })
     : view === 'week' ? `${formatDay(range.from, language, { day: 'numeric', month: 'short' })} — ${formatDay(addDays(range.to, -1), language, { day: 'numeric', month: 'short', year: 'numeric' })}`
@@ -199,6 +205,7 @@ export default function CalendarPage({ now, language }: Props) {
     } catch { setNotice(t.importError); }
   }
 
+  const subjects = Array.from(new Set(events.map(e => e.subject.trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const dayNames = Array.from({ length: 7 }, (_, i) => formatDay(addDays(monday(cursor), i), language, { weekday: 'short' }));
   const weekDays = Array.from({ length: view === 'day' ? 1 : 7 }, (_, i) => addDays(view === 'day' ? cursor : range.from, i));
   const eventForDay = (day: Date) => visible.filter(x => dateKey(x.start) === dateKey(day));
@@ -215,12 +222,15 @@ export default function CalendarPage({ now, language }: Props) {
     <section className="card calendar-shell">
       <div className="calendar-toolbar">
         <div className="calendar-period"><button className="btn" onClick={() => shift(-1)} aria-label="Previous period">‹</button><button className="btn" onClick={() => setCursor(startOfDay(now))}>{t.today}</button><button className="btn" onClick={() => shift(1)} aria-label="Next period">›</button><h2>{title}</h2></div>
+        <input className="calendar-jump" aria-label={language === 'ru' ? 'Перейти к дате' : 'Go to date'} type="date" value={dateKey(cursor)} onChange={e => { if (e.target.value) setCursor(fromKey(e.target.value)); }} />
         <div className="calendar-views">{(['month','week','day','agenda'] as View[]).map(v => <button key={v} className={view === v ? 'selected' : ''} onClick={() => setView(v)}>{t[v]}</button>)}</div>
       </div>
       <div className="calendar-filters">
         <input className="calendar-search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t.search} />
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}><option value="all">{t.all}</option>{(['study','deadline','exam','work','personal','other'] as CalendarCategory[]).map(c => <option key={c} value={c}>{categoryName(c, t)}</option>)}</select>
         <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} aria-label={t.priority}><option value="all">{t.allPriorities}</option><option value="high">{t.high}</option><option value="medium">{t.medium}</option><option value="low">{t.low}</option></select>
+        <select value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} aria-label={t.subjectFilter}><option value="all">{t.subjectFilter}</option>{subjects.map(s => <option key={s} value={s}>{s}</option>)}</select>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} aria-label={t.statusFilter}><option value="all">{t.statusFilter}</option><option value="active">{t.active}</option><option value="completed">{t.completed}</option><option value="overdue">{t.overdue}</option></select>
         <label className="calendar-check"><input type="checkbox" checked={onlyDeadlines} onChange={e => setOnlyDeadlines(e.target.checked)} />{t.deadlines}</label>
         <input aria-label={language === 'ru' ? 'Дата с' : 'Date from'} type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
         <input aria-label={language === 'ru' ? 'Дата по' : 'Date to'} type="date" min={dateFrom || undefined} value={dateTo} onChange={e => setDateTo(e.target.value)} />
@@ -239,10 +249,10 @@ export default function CalendarPage({ now, language }: Props) {
       </div>}
       {(view === 'week' || view === 'day') && <div className="time-grid-wrap"><div className="time-grid" style={{ '--day-count': weekDays.length } as React.CSSProperties}>
         <div className="time-head"><span />{weekDays.map(d => <div className={dateKey(d) === dateKey(now) ? 'today-head' : ''} key={dateKey(d)}>{formatDay(d, language, { weekday: 'short', day: 'numeric' })}</div>)}</div>
-        <div className="time-body"><div className="time-labels">{Array.from({ length: 15 }, (_, i) => <div key={i}>{pad(i + 7)}:00</div>)}</div>
+        <div className="time-body"><div className="time-labels">{Array.from({ length: 24 }, (_, i) => <div key={i}>{pad(i)}:00</div>)}</div>
           {weekDays.map(day => <div className="time-day" key={dateKey(day)} onDragOver={e => e.preventDefault()} onDrop={e => { const id = e.dataTransfer.getData('text/event-id'); if (id) moveEvent(id, day); }}>
             {Array.from({ length: 15 }, (_, i) => <button className="time-slot" key={i} aria-label={`${dateKey(day)} ${i + 7}:00`} onClick={() => { const d = new Date(day); d.setHours(i + 7, 0, 0, 0); openNew(d); }} />)}
-            {eventForDay(day).map(item => { const top = (item.start.getHours() - 7 + item.start.getMinutes() / 60) * 56; const height = Math.max(28, (item.end.getTime() - item.start.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item, true)}</div>; })}
+            {eventForDay(day).map(item => { const top = (item.start.getHours() + item.start.getMinutes() / 60) * 56; const height = Math.max(28, (item.end.getTime() - item.start.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item, true)}</div>; })}
           </div>)}
         </div>
       </div></div>}
