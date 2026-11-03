@@ -31,6 +31,7 @@ export default function Topbar({ now, userName, language, onNavigate }: Props) {
   }, [query, language, ru]);
   function openResult(result: SearchResult) {
     onNavigate(result.page);
+    window.setTimeout(() => document.getElementById((result.kind === 'task' ? 'task-' : 'event-') + result.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
     setQuery('');
     setFocused(false);
   }
