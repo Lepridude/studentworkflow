@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type CSSProperties } from
 import type { AppLanguage } from '../settings';
 import type { CalendarCategory, CalendarEvent, CalendarEventInput, CalendarPriority, RepeatRule } from '../types/calendar';
 import { loadCalendarEvents, saveCalendarEvents } from '../calendarStorage';
+import { removeTaskForCalendarEvent, syncCalendarEventToTask, syncCalendarEventsToTasks } from '../taskCalendarSync';
 
 type Props = { now: Date; language: AppLanguage };
 type View = 'month' | 'week' | 'day' | 'agenda';
@@ -106,6 +107,10 @@ export default function CalendarPage({ now, language }: Props) {
 
   useEffect(() => { if (!saveCalendarEvents(events)) setNotice(t.savedError); }, [events, t.savedError]);
   useEffect(() => {
+    const synced = syncCalendarEventsToTasks(events);
+    if (synced.some((event, index) => event.linkedTaskId !== events[index]?.linkedTaskId)) setEvents(synced);
+  }, [events]);
+  useEffect(() => {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
     const notified = new Set<string>();
     const check = () => {
@@ -170,12 +175,19 @@ export default function CalendarPage({ now, language }: Props) {
   }
   function saveEvent(input: CalendarEventInput) {
     if (!input.title.trim() || !input.start || !input.end || new Date(input.end) <= new Date(input.start)) { setNotice(language === 'ru' ? 'Проверьте название и время события.' : 'Check the event title and time.'); return; }
-    if (editing?.id) setEvents(prev => prev.map(e => e.id === editing.id ? { ...e, ...input } : e));
-    else setEvents(prev => [...prev, { ...input, id: uid(), createdAt: new Date().toISOString() }]);
+    if (editing?.id) {
+      const linked = syncCalendarEventToTask({ ...editing, ...input });
+      setEvents(prev => prev.map(e => e.id === editing.id ? linked : e));
+    } else {
+      const created: CalendarEvent = { ...input, id: uid(), createdAt: new Date().toISOString() };
+      const linked = syncCalendarEventToTask(created);
+      setEvents(prev => [...prev, linked]);
+    }
     setModalOpen(false); setEditing(null); setNotice('');
   }
   function deleteEvent(event: CalendarEvent) {
     if (!window.confirm(t.confirmDelete)) return;
+    removeTaskForCalendarEvent(event);
     setEvents(prev => prev.filter(e => e.id !== event.id)); setModalOpen(false); setEditing(null);
   }
   function toggleDone(id: string) { setEvents(prev => prev.map(e => e.id === id ? { ...e, completed: !e.completed } : e)); }
@@ -201,7 +213,8 @@ export default function CalendarPage({ now, language }: Props) {
     try {
       const imported = parseICS(await file.text());
       if (!imported.length) throw new Error('No events');
-      setEvents(prev => [...prev, ...imported.map(e => ({ ...e, id: uid(), createdAt: new Date().toISOString() }))]);
+      const linked = imported.map(e => syncCalendarEventToTask({ ...e, id: uid(), createdAt: new Date().toISOString() }));
+      setEvents(prev => [...prev, ...linked]);
       setNotice(language === 'ru' ? `Импортировано событий: ${imported.length}` : `Imported events: ${imported.length}`);
     } catch { setNotice(t.importError); }
   }
@@ -269,7 +282,7 @@ export default function CalendarPage({ now, language }: Props) {
 type ModalProps = { event: CalendarEvent; language: AppLanguage; customMinutes: string; setCustomMinutes: (v: string) => void; onClose: () => void; onSave: (v: CalendarEventInput) => void; onDelete: () => void };
 function EventModal({ event, language, customMinutes, setCustomMinutes, onClose, onSave, onDelete }: ModalProps) {
   const t = labels[language];
-  const [value, setValue] = useState<CalendarEventInput>({ title: event.title, description: event.description, start: event.start, end: event.end, category: event.category, priority: event.priority, color: event.color, location: event.location, subject: event.subject, reminder: event.reminder, customReminderMinutes: event.customReminderMinutes, repeat: event.repeat, completed: event.completed });
+  const [value, setValue] = useState<CalendarEventInput>({ title: event.title, description: event.description, start: event.start, end: event.end, category: event.category, priority: event.priority, color: event.color, location: event.location, subject: event.subject, reminder: event.reminder, customReminderMinutes: event.customReminderMinutes, repeat: event.repeat, completed: event.completed, linkedTaskId: event.linkedTaskId });
   const set = <K extends keyof CalendarEventInput>(key: K, next: CalendarEventInput[K]) => setValue(old => ({ ...old, [key]: next }));
   const submit = (e: FormEvent) => { e.preventDefault(); onSave(value); };
   return <div className="overlay" onMouseDown={e => e.target === e.currentTarget && onClose()}><div className="modal calendar-modal" role="dialog" aria-modal="true"><div className="modal-head"><h2>{event.id ? t.edit : t.create}</h2><button className="icon-btn" onClick={onClose} aria-label="Close">×</button></div>
