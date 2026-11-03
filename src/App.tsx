@@ -31,7 +31,7 @@ export default function App() {
     <div className="app">
       <Sidebar active={page} onNavigate={setPage} language={settings.language} />
       <div className="main">
-        <Topbar now={now} userName={settings.name} language={settings.language} />
+        <Topbar now={now} userName={settings.name} language={settings.language} onNavigate={setPage} />
         <main className="content">
           {page === 'dashboard' ? (
             <Dashboard now={now} userName={settings.name} language={settings.language} />
