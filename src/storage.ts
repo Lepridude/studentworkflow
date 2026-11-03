@@ -1,5 +1,4 @@
 import type { Task, Priority, StoredStatus } from './types/task';
-import { createDemoTasks } from './data/tasks';
 
 const KEY = 'studentworkflow.tasks.v1';
 
@@ -29,7 +28,7 @@ function isValidTask(value: unknown): value is Task {
 export function loadTasks(): Task[] {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw === null) return createDemoTasks();
+    if (raw === null) return [];
 
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter(isValidTask) : [];
