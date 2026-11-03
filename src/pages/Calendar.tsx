@@ -230,16 +230,16 @@ export default function CalendarPage({ now, language }: Props) {
     if (view === 'day') { const from = startOfDay(cursor); return { from, to: addDays(from, 1) }; }
     return { from: startOfDay(now), to: addDays(startOfDay(now), 60) };
   }, [view, cursor, now]);
-  const visible = useMemo(() => occurrences(events, range.from, range.to).filter(({ event }) => {
+  const visible = useMemo(() => occurrences(events, range.from, range.to).filter(({ event, start }) => {
     if (categoryFilter !== 'all' && event.category !== categoryFilter) return false;
     if (priorityFilter !== 'all' && event.priority !== priorityFilter) return false;
     if (subjectFilter !== 'all' && event.subject !== subjectFilter) return false;
     if (statusFilter === 'completed' && !event.completed) return false;
     if (statusFilter === 'active' && event.completed) return false;
-    if (statusFilter === 'overdue' && (event.completed || event.category !== 'deadline' || new Date(event.start) >= now)) return false;
+    if (statusFilter === 'overdue' && (event.completed || event.category !== 'deadline' || start >= now)) return false;
     if (onlyDeadlines && event.category !== 'deadline') return false;
     if (query && !(event.title + ' ' + event.description + ' ' + event.subject).toLowerCase().includes(query.toLowerCase())) return false;
-    const day = dateKey(new Date(event.start));
+    const day = dateKey(start);
     if (dateFrom && day < dateFrom) return false;
     if (dateTo && day > dateTo) return false;
     return true;
@@ -315,27 +315,29 @@ export default function CalendarPage({ now, language }: Props) {
       const imported = parseICS(await file.text());
       if (!imported.length) throw new Error('No valid events');
 
-      let added = 0;
+      const importedEvents: CalendarEvent[] = [];
       let skipped = 0;
-      setEvents(prev => {
-        const next = [...prev];
-        for (const input of imported) {
-          const duplicate = next.some(event =>
-            (input.externalUid && event.externalUid === input.externalUid)
-            || (event.title === input.title && event.start === input.start && event.end === input.end)
-          );
-          if (duplicate) {
-            skipped++;
-            continue;
-          }
-          next.push({ ...input, id: uid(), createdAt: new Date().toISOString(), source: 'external' });
-          added++;
+      for (const input of imported) {
+        const duplicate = events.some(event =>
+          (input.externalUid && event.externalUid === input.externalUid)
+          || (event.title === input.title && event.start === input.start && event.end === input.end)
+        ) || importedEvents.some(event =>
+          (input.externalUid && event.externalUid === input.externalUid)
+          || (event.title === input.title && event.start === input.start && event.end === input.end)
+        );
+        if (duplicate) {
+          skipped++;
+          continue;
         }
-        return next;
-      });
+        importedEvents.push({ ...input, id: uid(), createdAt: new Date().toISOString(), source: 'external' });
+      }
+      setEvents(prev => [...prev, ...importedEvents.filter(incoming => !prev.some(event =>
+        (incoming.externalUid && event.externalUid === incoming.externalUid)
+        || (event.title === incoming.title && event.start === incoming.start && event.end === incoming.end)
+      ))]);
       setNotice(language === 'ru'
-        ? `Добавлено: ${added}. Пропущено повторов: ${skipped}.`
-        : `Added: ${added}. Skipped duplicates: ${skipped}.`);
+        ? `Добавлено: ${importedEvents.length}. Пропущено повторов: ${skipped}.`
+        : `Added: ${importedEvents.length}. Skipped duplicates: ${skipped}.`);
     } catch {
       setNotice(t.importError);
     }
