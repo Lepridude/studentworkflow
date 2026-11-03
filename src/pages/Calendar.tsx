@@ -7,6 +7,11 @@ import { removeTaskForCalendarEvent, syncCalendarEventToTask, syncCalendarEvents
 type Props = { now: Date; language: AppLanguage };
 type View = 'month' | 'week' | 'day' | 'agenda';
 const DAY = 86400000;
+const DAY_START_HOUR = 7;
+const DAY_END_HOUR = 27;
+const VISIBLE_HOURS = DAY_END_HOUR - DAY_START_HOUR;
+const calendarDayStart = (day: Date) => { const start = startOfDay(day); start.setHours(DAY_START_HOUR); return start; };
+const calendarDayEnd = (day: Date) => { const end = startOfDay(day); end.setDate(end.getDate() + 1); end.setHours(3); return end; };
 const pad = (n: number) => String(n).padStart(2, '0');
 const dateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fromKey = (s: string) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -226,8 +231,8 @@ export default function CalendarPage({ now, language }: Props) {
       const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
       const from = monday(first); return { from, to: addDays(from, 42) };
     }
-    if (view === 'week') { const from = monday(cursor); return { from, to: addDays(from, 7) }; }
-    if (view === 'day') { const from = startOfDay(cursor); return { from, to: addDays(from, 1) }; }
+    if (view === 'week') { const from = calendarDayStart(monday(cursor)); const to = calendarDayEnd(addDays(monday(cursor), 6)); return { from, to }; }
+    if (view === 'day') { const from = calendarDayStart(cursor); const to = calendarDayEnd(cursor); return { from, to }; }
     return { from: startOfDay(now), to: addDays(startOfDay(now), 60) };
   }, [view, cursor, now]);
   const visible = useMemo(() => occurrences(events, range.from, range.to).filter(({ event, start }) => {
@@ -346,7 +351,7 @@ export default function CalendarPage({ now, language }: Props) {
   const subjects = Array.from(new Set(events.map(e => e.subject.trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const dayNames = Array.from({ length: 7 }, (_, i) => formatDay(addDays(monday(cursor), i), language, { weekday: 'short' }));
   const weekDays = Array.from({ length: view === 'day' ? 1 : 7 }, (_, i) => addDays(view === 'day' ? cursor : range.from, i));
-  const eventForDay = (day: Date) => visible.filter(x => dateKey(x.start) === dateKey(day));
+  const eventForDay = (day: Date) => { const from = calendarDayStart(day); const to = calendarDayEnd(day); return visible.filter(item => item.start < to && item.end > from); };
   const renderEvent = (item: { event: CalendarEvent; start: Date; end: Date }) => (
     <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.completed ? '#16a34a' : item.event.color || categoryColors[item.event.category] } as CSSProperties}
       onClick={() => { setEditing(item.event); setModalOpen(true); }} draggable onDragStart={e => e.dataTransfer.setData('text/event-id', item.event.id)}>
@@ -389,10 +394,10 @@ export default function CalendarPage({ now, language }: Props) {
       </div>}
       {(view === 'week' || view === 'day') && <div className="time-grid-wrap"><div className="time-grid" style={{ '--day-count': weekDays.length } as React.CSSProperties}>
         <div className="time-head"><span />{weekDays.map(d => <div className={dateKey(d) === dateKey(now) ? 'today-head' : ''} key={dateKey(d)}>{formatDay(d, language, { weekday: 'short', day: 'numeric' })}</div>)}</div>
-        <div className="time-body"><div className="time-labels">{Array.from({ length: 24 }, (_, i) => <div key={i}>{pad(i)}:00</div>)}</div>
+        <div className="time-body"><div className="time-labels">{Array.from({ length: VISIBLE_HOURS }, (_, i) => <div key={i}>{pad((DAY_START_HOUR + i) % 24)}:00</div>)}</div>
           {weekDays.map(day => <div className="time-day" key={dateKey(day)} onDragOver={e => e.preventDefault()} onDrop={e => { const id = e.dataTransfer.getData('text/event-id'); if (id) moveEvent(id, day); }}>
-            {Array.from({ length: 15 }, (_, i) => <button className="time-slot" key={i} aria-label={`${dateKey(day)} ${i + 7}:00`} onClick={() => { const d = new Date(day); d.setHours(i + 7, 0, 0, 0); openNew(d); }} />)}
-            {eventForDay(day).map(item => { const top = (item.start.getHours() + item.start.getMinutes() / 60) * 56; const height = Math.max(28, (item.end.getTime() - item.start.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item)}</div>; })}
+            {Array.from({ length: VISIBLE_HOURS }, (_, i) => <button className="time-slot" key={i} aria-label={`${dateKey(day)} ${pad((DAY_START_HOUR + i) % 24)}:00`} onClick={() => { const d = new Date(day); d.setDate(d.getDate() + Math.floor((DAY_START_HOUR + i) / 24)); d.setHours((DAY_START_HOUR + i) % 24, 0, 0, 0); openNew(d); }} />)}
+            {eventForDay(day).map(item => { const from = calendarDayStart(day); const to = calendarDayEnd(day); const clippedStart = new Date(Math.max(item.start.getTime(), from.getTime())); const clippedEnd = new Date(Math.min(item.end.getTime(), to.getTime())); const top = (clippedStart.getTime() - from.getTime()) / 3600000 * 56; const height = Math.max(28, (clippedEnd.getTime() - clippedStart.getTime()) / 3600000 * 56); return <div key={item.event.id + item.start.toISOString()} className="time-event" style={{ top: `${top}px`, height: `${height}px`, '--event-color': item.event.color } as React.CSSProperties}>{renderEvent(item)}</div>; })}
           </div>)}
         </div>
       </div></div>}
