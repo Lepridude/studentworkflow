@@ -32,34 +32,31 @@ const eventEnd = (e: CalendarEvent) => new Date(e.end);
 function occurrences(events: CalendarEvent[], from: Date, to: Date): { event: CalendarEvent; start: Date; end: Date }[] {
   const result: { event: CalendarEvent; start: Date; end: Date }[] = [];
   for (const event of events) {
-    const base = eventStart(event); const finish = eventEnd(event); const duration = finish.getTime() - base.getTime();
+    const base = eventStart(event);
+    const finish = eventEnd(event);
+    const duration = finish.getTime() - base.getTime();
     if (event.repeat === 'none') {
       if (finish >= from && base < to) result.push({ event, start: base, end: finish });
       continue;
     }
+    const interval = Math.max(1, Math.floor(event.repeatInterval || 1));
+    const until = event.repeatUntil ? new Date(event.repeatUntil) : null;
     let cursor = new Date(base);
-    const monthDay = base.getDate();
-    if (cursor < from) {
-      if (event.repeat === 'daily') {
-        const jumps = Math.max(0, Math.floor((from.getTime() - cursor.getTime()) / DAY) - 1);
-        cursor.setDate(cursor.getDate() + jumps);
-      } else if (event.repeat === 'weekly') {
-        const jumps = Math.max(0, Math.floor((from.getTime() - cursor.getTime()) / (7 * DAY)) - 1);
-        cursor.setDate(cursor.getDate() + jumps * 7);
-      } else {
-        const months = Math.max(0, (from.getFullYear() - cursor.getFullYear()) * 12 + from.getMonth() - cursor.getMonth() - 1);
-        const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + months, 1);
-        const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
-        cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(monthDay, lastDay), base.getHours(), base.getMinutes());
-      }
-    }
+    let index = 0;
     let guard = 0;
-    while (cursor < to && guard++ < 500) {
+    while (cursor < to && guard++ < 10000) {
+      if (event.repeatCount && index >= event.repeatCount) break;
+      if (until && cursor > until) break;
       const end = new Date(cursor.getTime() + duration);
       if (end >= from) result.push({ event, start: new Date(cursor), end });
-      if (event.repeat === 'daily') cursor.setDate(cursor.getDate() + 1);
-      else if (event.repeat === 'weekly') cursor.setDate(cursor.getDate() + 7);
-      else { const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1); const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate(); cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(monthDay, lastDay), base.getHours(), base.getMinutes()); }
+      index++;
+      if (event.repeat === 'daily') cursor.setDate(cursor.getDate() + interval);
+      else if (event.repeat === 'weekly') cursor.setDate(cursor.getDate() + 7 * interval);
+      else {
+        const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + interval, 1);
+        const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+        cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(base.getDate(), lastDay), base.getHours(), base.getMinutes(), base.getSeconds(), base.getMilliseconds());
+      }
     }
   }
   return result.sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -69,7 +66,12 @@ function toICS(events: CalendarEvent[]) {
   const stamp = (s: string) => s.replace(/[-:]/g, '') + '00';
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//StudentFlow//Calendar//RU'];
   for (const e of events) {
-    lines.push('BEGIN:VEVENT', `UID:${e.id}@studentflow`, `DTSTART:${stamp(e.start)}`, `DTEND:${stamp(e.end)}`, `SUMMARY:${icsEscape(e.title)}`, `DESCRIPTION:${icsEscape(e.description)}`, `CATEGORIES:${e.category}`, 'END:VEVENT');
+    lines.push('BEGIN:VEVENT', `UID:${e.externalUid || e.id + '@studentflow'}`, `DTSTART:${stamp(e.start)}`, `DTEND:${stamp(e.end)}`, `SUMMARY:${icsEscape(e.title)}`, `DESCRIPTION:${icsEscape(e.description)}`, `CATEGORIES:${e.category}`);
+    if (e.repeat !== 'none') {
+      const rule = [`FREQ=${e.repeat.toUpperCase()}`, e.repeatInterval && e.repeatInterval > 1 ? `INTERVAL=${Math.floor(e.repeatInterval)}` : '', e.repeatCount ? `COUNT=${Math.floor(e.repeatCount)}` : '', e.repeatUntil ? `UNTIL=${e.repeatUntil.replace(/[-:]/g, '')}00` : ''].filter(Boolean).join(';');
+      lines.push(`RRULE:${rule}`);
+    }
+    lines.push('END:VEVENT');
   }
   lines.push('END:VCALENDAR');
   return lines.join('\r\n');
@@ -158,6 +160,11 @@ function parseICS(text: string): CalendarEventInput[] {
     const rule = getProperty(block, 'RRULE').value.toUpperCase();
     const frequency = rule.match(/(?:^|;)FREQ=(DAILY|WEEKLY|MONTHLY)(?:;|$)/)?.[1];
     const repeat: RepeatRule = frequency === 'DAILY' ? 'daily' : frequency === 'WEEKLY' ? 'weekly' : frequency === 'MONTHLY' ? 'monthly' : 'none';
+    const interval = Math.max(1, Number(rule.match(/(?:^|;)INTERVAL=(\\d+)/)?.[1] || 1));
+    const countValue = Number(rule.match(/(?:^|;)COUNT=(\\d+)/)?.[1]);
+    const untilRaw = rule.match(/(?:^|;)UNTIL=([^;]+)/)?.[1] || '';
+    const untilMatch = untilRaw.match(/^(\\d{4})(\\d{2})(\\d{2})/);
+    const repeatUntil = untilMatch ? `${untilMatch[1]}-${untilMatch[2]}-${untilMatch[3]}T23:59` : '';
 
     return {
       title: unescapeText(summary) || 'Event',
@@ -171,6 +178,9 @@ function parseICS(text: string): CalendarEventInput[] {
       subject: '',
       reminder: 'none',
       repeat,
+      repeatInterval: interval,
+      repeatCount: Number.isFinite(countValue) && countValue > 0 ? countValue : undefined,
+      repeatUntil: repeatUntil || undefined,
       completed: false,
       source: 'external',
       externalUid: uidValue || undefined,
