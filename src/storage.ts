@@ -31,7 +31,9 @@ export function loadTasks(): Task[] {
     if (raw === null) return [];
 
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter(isValidTask) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter(isValidTask).filter(task => !/^demo-[1-7]$/.test(task.id))
+      : [];
   } catch {
     return [];
   }
