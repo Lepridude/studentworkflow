@@ -20,6 +20,9 @@ export type CalendarEvent = {
   repeatInterval?: number;
   repeatCount?: number;
   repeatUntil?: string;
+  repeatInterval?: number;
+  repeatCount?: number;
+  repeatUntil?: string;
   completed: boolean;
   createdAt: string;
   linkedTaskId?: string;
