@@ -46,8 +46,6 @@ function toCalendarEvent(task: Task, existing?: CalendarEvent): CalendarEvent {
 
 /** Синхронизирует задачи пакетно, сохраняя пользовательские настройки событий. */
 export function syncTasksToCalendar(tasks: Task[]): void {
-  if (tasks.length === 0) return;
-
   const events = loadCalendarEvents();
   const taskIds = new Set(tasks.map(task => task.id));
   const taskEvents = new Map<string, CalendarEvent>();
