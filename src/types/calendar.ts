@@ -20,6 +20,8 @@ export type CalendarEvent = {
   completed: boolean;
   createdAt: string;
   linkedTaskId?: string;
+  source?: 'external';
+  externalUid?: string;
 };
 
 export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'createdAt'>;
