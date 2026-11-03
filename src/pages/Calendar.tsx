@@ -160,10 +160,10 @@ function parseICS(text: string): CalendarEventInput[] {
     const rule = getProperty(block, 'RRULE').value.toUpperCase();
     const frequency = rule.match(/(?:^|;)FREQ=(DAILY|WEEKLY|MONTHLY)(?:;|$)/)?.[1];
     const repeat: RepeatRule = frequency === 'DAILY' ? 'daily' : frequency === 'WEEKLY' ? 'weekly' : frequency === 'MONTHLY' ? 'monthly' : 'none';
-    const interval = Math.max(1, Number(rule.match(/(?:^|;)INTERVAL=(\\d+)/)?.[1] || 1));
-    const countValue = Number(rule.match(/(?:^|;)COUNT=(\\d+)/)?.[1]);
+    const interval = Math.max(1, Number(rule.match(/(?:^|;)INTERVAL=(\d+)/)?.[1] || 1));
+    const countValue = Number(rule.match(/(?:^|;)COUNT=(\d+)/)?.[1]);
     const untilRaw = rule.match(/(?:^|;)UNTIL=([^;]+)/)?.[1] || '';
-    const untilMatch = untilRaw.match(/^(\\d{4})(\\d{2})(\\d{2})/);
+    const untilMatch = untilRaw.match(/^(\d{4})(\d{2})(\d{2})/);
     const repeatUntil = untilMatch ? `${untilMatch[1]}-${untilMatch[2]}-${untilMatch[3]}T23:59` : '';
 
     return {
