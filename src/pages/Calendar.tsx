@@ -70,7 +70,7 @@ function toICS(events: CalendarEvent[]) {
   return lines.join('\r\n');
 }
 function parseICS(text: string): CalendarEventInput[] {
-  const lines = text.replace(/^\\uFEFF/, '').replace(/\\r?\\n[ \\t]/g, '').split(/\\r?\\n/);
+  const lines = text.replace(/^\uFEFF/, '').replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
   const blocks: string[][] = [];
   let current: string[] | null = null;
 
@@ -83,10 +83,10 @@ function parseICS(text: string): CalendarEventInput[] {
   }
 
   const unescapeText = (value: string) => value
-    .replace(/\\\\n/gi, '\\n')
-    .replace(/\\\\,/g, ',')
-    .replace(/\\\\;/g, ';')
-    .replace(/\\\\\\\\/g, '\\\\');
+    .replace(/\\n/gi, '\n')
+    .replace(/\\,/g, ',')
+    .replace(/\\;/g, ';')
+    .replace(/\\\\/g, '\\');
 
   const getProperty = (block: string[], name: string) => {
     const line = block.find(item => item.toUpperCase().startsWith(name + ':') || item.toUpperCase().startsWith(name + ';'));
@@ -96,11 +96,10 @@ function parseICS(text: string): CalendarEventInput[] {
   };
 
   const toLocalDateTime = (raw: string, params: string): string => {
-    const match = raw.match(/^(\\d{4})(\\d{2})(\\d{2})(?:T(\\d{2})(\\d{2})(\\d{2})?)?(Z)?$/);
+    const match = raw.match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?)?(Z)?$/);
     if (!match) return '';
     const [, year, month, day, hour = '00', minute = '00', second = '00', utc] = match;
-    const values = [Number(year), Number(month), Number(day), Number(hour), Number(minute), Number(second)];
-    const [y, m, d, h, min, sec] = values;
+    const [y, m, d, h, min, sec] = [year, month, day, hour, minute, second].map(Number);
     let date: Date;
 
     if (utc) {
