@@ -757,6 +757,8 @@ button {
 .calendar-search { flex:1; min-width:180px; }
 .calendar-check { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:13px; }
 .calendar-check input, .calendar-complete input, .agenda-done input { accent-color:var(--primary); }
+.calendar-filter-reset { min-height:38px; padding:7px 11px; font-size:12px; }
+.calendar-filter-count { color:var(--muted); font-size:12px; white-space:nowrap; }
 .calendar-notice { margin:12px 0; color:var(--red); font-size:13px; }
 .month-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); margin-top:12px; border-top:1px solid var(--border); border-left:1px solid var(--border); }
 .month-weekday { padding:9px 5px; text-align:center; color:var(--muted); font-size:12px; font-weight:700; border-right:1px solid var(--border); }
