@@ -17,8 +17,8 @@ const monday = (d: Date) => addDays(startOfDay(d), (d.getDay() + 6) % 7 * -1);
 const uid = () => typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `event_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 const categoryColors: Record<CalendarCategory, string> = { study: '#4f46e5', deadline: '#dc2626', exam: '#d97706', work: '#0891b2', personal: '#16a34a', other: '#64748b' };
 const labels = {
-  ru: { title: 'Календарь', subtitle: 'Расписание, дедлайны и личные события в одном месте.', add: 'Добавить событие', today: 'Сегодня', month: 'Месяц', week: 'Неделя', day: 'День', agenda: 'Повестка', search: 'Поиск событий…', all: 'Все категории', deadlines: 'Только дедлайны', priority: 'Приоритет', allPriorities: 'Любой приоритет', subjectFilter: 'Все предметы', statusFilter: 'Все статусы', active: 'Предстоит', completed: 'Выполнено', empty: 'На этот период событий нет.', edit: 'Редактировать событие', create: 'Новое событие', name: 'Название', desc: 'Описание', start: 'Начало', end: 'Окончание', category: 'Категория', subject: 'Предмет', location: 'Место', reminder: 'Напоминание', repeat: 'Повтор', color: 'Цвет', low: 'Низкий', medium: 'Средний', high: 'Высокий', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', confirmDelete: 'Удалить это событие?', done: 'Выполнено', markDone: 'Отметить выполненным', study: 'Учёба', deadline: 'Дедлайн', exam: 'Экзамен', work: 'Работа', personal: 'Личное', other: 'Другое', none: 'Нет', min15: 'За 15 минут', hour1: 'За 1 час', day1: 'За 1 день', day3: 'За 3 дня', custom: 'Своё время', daily: 'Ежедневно', weekly: 'Еженедельно', monthly: 'Ежемесячно', repeatNone: 'Не повторять', permission: 'Включить уведомления', permissionHint: 'Напоминания работают, пока StudentFlow открыт. Для уведомлений разрешите доступ браузеру.', export: 'Экспорт .ics', import: 'Импорт .ics', importError: 'Не удалось прочитать файл календаря.', savedError: 'Не удалось сохранить данные в браузере.', dueSoon: 'Скоро', overdue: 'Просрочено', upcoming: 'Предстоящие события', hours: 'час', customMinutes: 'Минут до события' },
-  en: { title: 'Calendar', subtitle: 'Classes, deadlines and personal events in one place.', add: 'Add event', today: 'Today', month: 'Month', week: 'Week', day: 'Day', agenda: 'Agenda', search: 'Search events…', all: 'All categories', deadlines: 'Deadlines only', priority: 'Priority', allPriorities: 'Any priority', subjectFilter: 'All subjects', statusFilter: 'All statuses', active: 'Upcoming', completed: 'Completed', empty: 'No events in this period.', edit: 'Edit event', create: 'New event', name: 'Title', desc: 'Description', start: 'Start', end: 'End', category: 'Category', subject: 'Subject', location: 'Location', reminder: 'Reminder', repeat: 'Repeat', color: 'Color', low: 'Low', medium: 'Medium', high: 'High', save: 'Save', cancel: 'Cancel', delete: 'Delete', confirmDelete: 'Delete this event?', done: 'Completed', markDone: 'Mark as completed', study: 'Study', deadline: 'Deadline', exam: 'Exam', work: 'Work', personal: 'Personal', other: 'Other', none: 'None', min15: '15 minutes before', hour1: '1 hour before', day1: '1 day before', day3: '3 days before', custom: 'Custom', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', repeatNone: 'Does not repeat', permission: 'Enable notifications', permissionHint: 'Reminders run while StudentFlow is open. Allow browser notifications to receive them.', export: 'Export .ics', import: 'Import .ics', importError: 'Could not read the calendar file.', savedError: 'Could not save data in this browser.', dueSoon: 'Due soon', overdue: 'Overdue', upcoming: 'Upcoming events', hours: 'hour', customMinutes: 'Minutes before event' }
+  ru: { title: 'Календарь', subtitle: 'Расписание, дедлайны и личные события в одном месте.', add: 'Добавить событие', today: 'Сегодня', month: 'Месяц', week: 'Неделя', day: 'День', agenda: 'Повестка', search: 'Поиск событий…', all: 'Все категории', deadlines: 'Только дедлайны', priority: 'Приоритет', allPriorities: 'Любой приоритет', subjectFilter: 'Все предметы', statusFilter: 'Все статусы', active: 'Предстоит', completed: 'Выполнено', empty: 'На этот период событий нет.', edit: 'Редактировать событие', create: 'Новое событие', name: 'Название', desc: 'Описание', start: 'Начало', end: 'Окончание', category: 'Категория', subject: 'Предмет', location: 'Место', reminder: 'Напоминание', repeat: 'Повтор', color: 'Цвет', low: 'Низкий', medium: 'Средний', high: 'Высокий', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', confirmDelete: 'Удалить это событие?', done: 'Выполнено', markDone: 'Отметить выполненным', study: 'Учёба', deadline: 'Дедлайн', exam: 'Экзамен', work: 'Работа', personal: 'Личное', other: 'Другое', none: 'Нет', min15: 'За 15 минут', hour1: 'За 1 час', day1: 'За 1 день', day3: 'За 3 дня', custom: 'Своё время', daily: 'Ежедневно', weekly: 'Еженедельно', monthly: 'Ежемесячно', repeatNone: 'Не повторять', permission: 'Включить уведомления', permissionHint: 'Напоминания работают, пока StudentFlow открыт. Для уведомлений разрешите доступ браузеру.', export: 'Экспорт .ics', import: 'Импорт .ics', importError: 'Не удалось прочитать файл календаря.', savedError: 'Не удалось сохранить данные в браузере.', dueSoon: 'Скоро', overdue: 'Просрочено', upcoming: 'Предстоящие события', hours: 'час', customMinutes: 'Минут до события', clearFilters: 'Сбросить фильтры', showing: 'Показано' },
+  en: { title: 'Calendar', subtitle: 'Classes, deadlines and personal events in one place.', add: 'Add event', today: 'Today', month: 'Month', week: 'Week', day: 'Day', agenda: 'Agenda', search: 'Search events…', all: 'All categories', deadlines: 'Deadlines only', priority: 'Priority', allPriorities: 'Any priority', subjectFilter: 'All subjects', statusFilter: 'All statuses', active: 'Upcoming', completed: 'Completed', empty: 'No events in this period.', edit: 'Edit event', create: 'New event', name: 'Title', desc: 'Description', start: 'Start', end: 'End', category: 'Category', subject: 'Subject', location: 'Location', reminder: 'Reminder', repeat: 'Repeat', color: 'Color', low: 'Low', medium: 'Medium', high: 'High', save: 'Save', cancel: 'Cancel', delete: 'Delete', confirmDelete: 'Delete this event?', done: 'Completed', markDone: 'Mark as completed', study: 'Study', deadline: 'Deadline', exam: 'Exam', work: 'Work', personal: 'Personal', other: 'Other', none: 'None', min15: '15 minutes before', hour1: '1 hour before', day1: '1 day before', day3: '3 days before', custom: 'Custom', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', repeatNone: 'Does not repeat', permission: 'Enable notifications', permissionHint: 'Reminders run while StudentFlow is open. Allow browser notifications to receive them.', export: 'Export .ics', import: 'Import .ics', importError: 'Could not read the calendar file.', savedError: 'Could not save data in this browser.', dueSoon: 'Due soon', overdue: 'Overdue', upcoming: 'Upcoming events', hours: 'hour', customMinutes: 'Minutes before event', clearFilters: 'Clear filters', showing: 'Showing' }
 };
 const categoryName = (c: CalendarCategory, t: typeof labels.ru) => t[c];
 const formatDay = (d: Date, lang: AppLanguage, opts: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric' }) => d.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-US', opts);
@@ -70,19 +70,108 @@ function toICS(events: CalendarEvent[]) {
   return lines.join('\r\n');
 }
 function parseICS(text: string): CalendarEventInput[] {
-  const unfolded = text.replace(/\r?\n[ \t]/g, '');
-  const blocks = unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || [];
-  const parseDate = (v: string) => {
-    const m = v.match(/(\d{4})(\d{2})(\d{2})T?(\d{2})?(\d{2})?/);
-    if (!m) return '';
-    return `${m[1]}-${m[2]}-${m[3]}T${m[4] || '09'}:${m[5] || '00'}`;
+  const lines = text.replace(/^\\uFEFF/, '').replace(/\\r?\\n[ \\t]/g, '').split(/\\r?\\n/);
+  const blocks: string[][] = [];
+  let current: string[] | null = null;
+
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') current = [];
+    else if (line === 'END:VEVENT' && current) {
+      blocks.push(current);
+      current = null;
+    } else if (current) current.push(line);
+  }
+
+  const unescapeText = (value: string) => value
+    .replace(/\\\\n/gi, '\\n')
+    .replace(/\\\\,/g, ',')
+    .replace(/\\\\;/g, ';')
+    .replace(/\\\\\\\\/g, '\\\\');
+
+  const getProperty = (block: string[], name: string) => {
+    const line = block.find(item => item.toUpperCase().startsWith(name + ':') || item.toUpperCase().startsWith(name + ';'));
+    if (!line) return { value: '', params: '' };
+    const colon = line.indexOf(':');
+    return { value: line.slice(colon + 1), params: line.slice(name.length, colon) };
   };
+
+  const toLocalDateTime = (raw: string, params: string): string => {
+    const match = raw.match(/^(\\d{4})(\\d{2})(\\d{2})(?:T(\\d{2})(\\d{2})(\\d{2})?)?(Z)?$/);
+    if (!match) return '';
+    const [, year, month, day, hour = '00', minute = '00', second = '00', utc] = match;
+    const values = [Number(year), Number(month), Number(day), Number(hour), Number(minute), Number(second)];
+    const [y, m, d, h, min, sec] = values;
+    let date: Date;
+
+    if (utc) {
+      date = new Date(Date.UTC(y, m - 1, d, h, min, sec));
+    } else {
+      const tzid = params.match(/TZID=([^;:]+)/i)?.[1]?.replace(/^"|"$/g, '');
+      if (tzid) {
+        try {
+          const desired = Date.UTC(y, m - 1, d, h, min, sec);
+          const formatter = new Intl.DateTimeFormat('en-CA', {
+            timeZone: tzid, year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23',
+          });
+          let guess = desired;
+          for (let i = 0; i < 2; i++) {
+            const parts = Object.fromEntries(formatter.formatToParts(new Date(guess)).map(part => [part.type, part.value]));
+            const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
+            guess += desired - represented;
+          }
+          date = new Date(guess);
+        } catch {
+          date = new Date(y, m - 1, d, h, min, sec);
+        }
+      } else {
+        date = new Date(y, m - 1, d, h, min, sec);
+      }
+    }
+    return localInput(date);
+  };
+
   return blocks.map((block): CalendarEventInput => {
-    const get = (key: string) => block.match(new RegExp('^' + key + '(?:;[^:]*)?:(.*)$', 'm'))?.[1]?.replace(/\\n/g, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';') || '';
-    const start = parseDate(get('DTSTART')); const end = parseDate(get('DTEND')) || start;
-    const cat = get('CATEGORIES') as CalendarCategory;
-    return { title: get('SUMMARY') || 'Event', description: get('DESCRIPTION'), start, end: end > start ? end : localInput(new Date(new Date(start).getTime() + 3600000)), category: ['study','deadline','exam','work','personal','other'].includes(cat) ? cat : 'other', priority: 'medium', color: categoryColors[cat] || categoryColors.other, location: get('LOCATION'), subject: '', reminder: 'none', repeat: 'none', completed: false };
-  }).filter(e => e.start && e.end);
+    const startProp = getProperty(block, 'DTSTART');
+    const endProp = getProperty(block, 'DTEND');
+    const start = toLocalDateTime(startProp.value, startProp.params);
+    const isAllDay = !startProp.value.includes('T');
+    let end = toLocalDateTime(endProp.value, endProp.params);
+
+    if (!end && start) {
+      const endDate = new Date(start);
+      if (isAllDay) endDate.setDate(endDate.getDate() + 1);
+      else endDate.setHours(endDate.getHours() + 1);
+      end = localInput(endDate);
+    }
+
+    const summary = getProperty(block, 'SUMMARY').value;
+    const description = getProperty(block, 'DESCRIPTION').value;
+    const location = getProperty(block, 'LOCATION').value;
+    const categories = getProperty(block, 'CATEGORIES').value.split(',').map(value => value.trim().toLowerCase());
+    const category = categories.find(value => ['study', 'deadline', 'exam', 'work', 'personal', 'other'].includes(value)) as CalendarCategory | undefined;
+    const uidValue = getProperty(block, 'UID').value.trim();
+    const rule = getProperty(block, 'RRULE').value.toUpperCase();
+    const frequency = rule.match(/(?:^|;)FREQ=(DAILY|WEEKLY|MONTHLY)(?:;|$)/)?.[1];
+    const repeat: RepeatRule = frequency === 'DAILY' ? 'daily' : frequency === 'WEEKLY' ? 'weekly' : frequency === 'MONTHLY' ? 'monthly' : 'none';
+
+    return {
+      title: unescapeText(summary) || 'Event',
+      description: unescapeText(description),
+      start,
+      end,
+      category: category || 'other',
+      priority: 'medium',
+      color: categoryColors[category || 'other'],
+      location: unescapeText(location),
+      subject: '',
+      reminder: 'none',
+      repeat,
+      completed: false,
+      source: 'external',
+      externalUid: uidValue || undefined,
+    };
+  }).filter(event => event.start && event.end && new Date(event.end) > new Date(event.start));
 }
 
 export default function CalendarPage({ now, language }: Props) {
@@ -156,6 +245,19 @@ export default function CalendarPage({ now, language }: Props) {
     if (dateTo && day > dateTo) return false;
     return true;
   }), [events, range, categoryFilter, priorityFilter, subjectFilter, statusFilter, onlyDeadlines, query, dateFrom, dateTo, now]);
+  const totalInRange = useMemo(() => occurrences(events, range.from, range.to).length, [events, range]);
+  const filtersActive = categoryFilter !== 'all' || priorityFilter !== 'all' || subjectFilter !== 'all'
+    || statusFilter !== 'all' || onlyDeadlines || Boolean(query || dateFrom || dateTo);
+  function resetFilters() {
+    setCategoryFilter('all');
+    setPriorityFilter('all');
+    setSubjectFilter('all');
+    setStatusFilter('all');
+    setOnlyDeadlines(false);
+    setQuery('');
+    setDateFrom('');
+    setDateTo('');
+  }
   const title = view === 'month'
     ? cursor.toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })
     : view === 'week' ? `${formatDay(range.from, language, { day: 'numeric', month: 'short' })} — ${formatDay(addDays(range.to, -1), language, { day: 'numeric', month: 'short', year: 'numeric' })}`
@@ -212,11 +314,32 @@ export default function CalendarPage({ now, language }: Props) {
     if (!file) return;
     try {
       const imported = parseICS(await file.text());
-      if (!imported.length) throw new Error('No events');
-      const linked = imported.map(e => syncCalendarEventToTask({ ...e, id: uid(), createdAt: new Date().toISOString() }));
-      setEvents(prev => [...prev, ...linked]);
-      setNotice(language === 'ru' ? `Импортировано событий: ${imported.length}` : `Imported events: ${imported.length}`);
-    } catch { setNotice(t.importError); }
+      if (!imported.length) throw new Error('No valid events');
+
+      let added = 0;
+      let skipped = 0;
+      setEvents(prev => {
+        const next = [...prev];
+        for (const input of imported) {
+          const duplicate = next.some(event =>
+            (input.externalUid && event.externalUid === input.externalUid)
+            || (event.title === input.title && event.start === input.start && event.end === input.end)
+          );
+          if (duplicate) {
+            skipped++;
+            continue;
+          }
+          next.push({ ...input, id: uid(), createdAt: new Date().toISOString(), source: 'external' });
+          added++;
+        }
+        return next;
+      });
+      setNotice(language === 'ru'
+        ? `Добавлено: ${added}. Пропущено повторов: ${skipped}.`
+        : `Added: ${added}. Skipped duplicates: ${skipped}.`);
+    } catch {
+      setNotice(t.importError);
+    }
   }
 
   const subjects = Array.from(new Set(events.map(e => e.subject.trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
@@ -248,6 +371,8 @@ export default function CalendarPage({ now, language }: Props) {
         <label className="calendar-check"><input type="checkbox" checked={onlyDeadlines} onChange={e => setOnlyDeadlines(e.target.checked)} />{t.deadlines}</label>
         <input aria-label={language === 'ru' ? 'Дата с' : 'Date from'} type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
         <input aria-label={language === 'ru' ? 'Дата по' : 'Date to'} type="date" min={dateFrom || undefined} value={dateTo} onChange={e => setDateTo(e.target.value)} />
+        {filtersActive && <button type="button" className="btn calendar-filter-reset" onClick={resetFilters}>{t.clearFilters}</button>}
+        <span className="calendar-filter-count">{t.showing}: {visible.length} / {totalInRange}</span>
       </div>
       {notice && <p className="calendar-notice" role="status">{notice}</p>}
       {view === 'month' && <div className="month-grid">
