@@ -13,6 +13,7 @@ export type Task = {
   priority: Priority;
   status: StoredStatus;
   createdAt: string; // ISO-дата
+  calendarEventId?: string;
 };
 
 export type NewTaskInput = {
