@@ -769,11 +769,6 @@ button {
 .month-events { display:flex; flex-direction:column; gap:3px; margin-top:4px; }
 .cal-event { display:flex; align-items:center; gap:5px; width:100%; min-width:0; border:0; border-left:3px solid var(--event-color,var(--primary)); border-radius:4px; background:color-mix(in srgb,var(--event-color,var(--primary)) 11%, white); color:var(--text); text-align:left; padding:4px 5px; font-size:11px; overflow:hidden; }
 .cal-event:hover { filter:brightness(.97); }
-.cal-event.is-completed .cal-event-name {
-  text-decoration-line: line-through;
-  text-decoration-thickness: 2px;
-  text-decoration-color: currentColor;
-}
 .cal-event-time { flex-shrink:0; color:var(--muted); font-size:10px; }
 .cal-event-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
 .cal-event-tag { margin-left:auto; color:var(--muted); font-size:10px; }
@@ -914,7 +909,7 @@ button {
 
 /* Completed calendar items */
 .cal-event.is-completed {
-  --event-color: #16a34a !important;
+  --event-color: #16a34a;
   background: #dcfce7;
   color: #166534;
 }
