@@ -81,6 +81,8 @@ export default function CalendarPage({ now, language }: Props) {
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [onlyDeadlines, setOnlyDeadlines] = useState(false);
   const [query, setQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [notice, setNotice] = useState('');
   const [notificationEnabled, setNotificationEnabled] = useState(typeof Notification !== 'undefined' && Notification.permission === 'granted');
   const [customMinutes, setCustomMinutes] = useState('30');
@@ -124,8 +126,11 @@ export default function CalendarPage({ now, language }: Props) {
     if (priorityFilter !== 'all' && event.priority !== priorityFilter) return false;
     if (onlyDeadlines && event.category !== 'deadline') return false;
     if (query && !(event.title + ' ' + event.description + ' ' + event.subject).toLowerCase().includes(query.toLowerCase())) return false;
+    const day = dateKey(new Date(event.start));
+    if (dateFrom && day < dateFrom) return false;
+    if (dateTo && day > dateTo) return false;
     return true;
-  }), [events, range, categoryFilter, priorityFilter, onlyDeadlines, query]);
+  }), [events, range, categoryFilter, priorityFilter, onlyDeadlines, query, dateFrom, dateTo]);
   const title = view === 'month'
     ? cursor.toLocaleDateString(language === 'ru' ? 'ru-RU' : 'en-US', { month: 'long', year: 'numeric' })
     : view === 'week' ? `${formatDay(range.from, language, { day: 'numeric', month: 'short' })} — ${formatDay(addDays(range.to, -1), language, { day: 'numeric', month: 'short', year: 'numeric' })}`
@@ -204,6 +209,8 @@ export default function CalendarPage({ now, language }: Props) {
         <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}><option value="all">{t.all}</option>{(['study','deadline','exam','work','personal','other'] as CalendarCategory[]).map(c => <option key={c} value={c}>{categoryName(c, t)}</option>)}</select>
         <select value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)} aria-label={t.priority}><option value="all">{t.allPriorities}</option><option value="high">{t.high}</option><option value="medium">{t.medium}</option><option value="low">{t.low}</option></select>
         <label className="calendar-check"><input type="checkbox" checked={onlyDeadlines} onChange={e => setOnlyDeadlines(e.target.checked)} />{t.deadlines}</label>
+        <input aria-label={language === 'ru' ? 'Дата с' : 'Date from'} type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+        <input aria-label={language === 'ru' ? 'Дата по' : 'Date to'} type="date" min={dateFrom || undefined} value={dateTo} onChange={e => setDateTo(e.target.value)} />
       </div>
       {notice && <p className="calendar-notice" role="status">{notice}</p>}
       {view === 'month' && <div className="month-grid">
