@@ -1,25 +1,47 @@
-import type { CalendarEvent } from './types/calendar';
+import type { CalendarEvent, CalendarCategory, CalendarPriority, ReminderOption, RepeatRule } from './types/calendar';
 
 const EVENTS_KEY = 'studentworkflow.calendar.events.v1';
 
+const CATEGORIES: readonly CalendarCategory[] = ['study', 'deadline', 'exam', 'work', 'personal', 'other'];
+const PRIORITIES: readonly CalendarPriority[] = ['low', 'medium', 'high'];
+const REMINDERS: readonly ReminderOption[] = ['none', '15', '60', '1440', '4320', 'custom'];
+const REPEATS: readonly RepeatRule[] = ['none', 'daily', 'weekly', 'monthly'];
+
 function isValidEvent(value: unknown): value is CalendarEvent {
   if (!value || typeof value !== 'object') return false;
+
   const event = value as Partial<CalendarEvent>;
+  const start = typeof event.start === 'string' ? new Date(event.start).getTime() : NaN;
+  const end = typeof event.end === 'string' ? new Date(event.end).getTime() : NaN;
+
   return typeof event.id === 'string'
+    && event.id.length > 0
     && typeof event.title === 'string'
-    && typeof event.start === 'string'
-    && !Number.isNaN(new Date(event.start).getTime())
-    && typeof event.end === 'string'
-    && !Number.isNaN(new Date(event.end).getTime())
-    && new Date(event.end).getTime() > new Date(event.start).getTime()
-    && typeof event.category === 'string'
-    && typeof event.completed === 'boolean';
+    && typeof event.description === 'string'
+    && Number.isFinite(start)
+    && Number.isFinite(end)
+    && end > start
+    && CATEGORIES.includes(event.category as CalendarCategory)
+    && PRIORITIES.includes(event.priority as CalendarPriority)
+    && typeof event.color === 'string'
+    && typeof event.location === 'string'
+    && typeof event.subject === 'string'
+    && REMINDERS.includes(event.reminder as ReminderOption)
+    && (event.customReminderMinutes === undefined
+      || (Number.isInteger(event.customReminderMinutes) && event.customReminderMinutes > 0))
+    && REPEATS.includes(event.repeat as RepeatRule)
+    && typeof event.completed === 'boolean'
+    && typeof event.createdAt === 'string'
+    && (event.linkedTaskId === undefined || typeof event.linkedTaskId === 'string')
+    && (event.source === undefined || event.source === 'external')
+    && (event.externalUid === undefined || typeof event.externalUid === 'string');
 }
 
 export function loadCalendarEvents(): CalendarEvent[] {
   try {
     const raw = localStorage.getItem(EVENTS_KEY);
     if (!raw) return [];
+
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed.filter(isValidEvent) : [];
   } catch {
