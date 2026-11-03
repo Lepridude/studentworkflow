@@ -17,6 +17,9 @@ export type CalendarEvent = {
   reminder: ReminderOption;
   customReminderMinutes?: number;
   repeat: RepeatRule;
+  repeatInterval?: number;
+  repeatCount?: number;
+  repeatUntil?: string;
   completed: boolean;
   createdAt: string;
   linkedTaskId?: string;
