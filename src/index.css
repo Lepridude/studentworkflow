@@ -781,7 +781,7 @@ button {
 .time-head .today-head { color:var(--primary); background:var(--primary-soft); }
 .time-body { display:grid; grid-template-columns:54px repeat(var(--day-count),minmax(0,1fr)); }
 .time-labels > div { height:56px; padding:0 6px; transform:translateY(-8px); color:var(--muted); font-size:11px; text-align:right; }
-.time-day { position:relative; height:840px; border-left:1px solid var(--border); background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,var(--border) 55px,var(--border) 56px); }
+.time-day { position:relative; height:1344px; border-left:1px solid var(--border); background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,var(--border) 55px,var(--border) 56px); }
 .time-slot { display:block; width:100%; height:56px; border:0; border-bottom:1px solid transparent; background:transparent; }
 .time-slot:hover { background:var(--primary-soft); }
 .time-event { position:absolute; left:3px; right:3px; z-index:1; overflow:hidden; }
