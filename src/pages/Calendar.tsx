@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type CSSProperties } from 'react';
 import type { AppLanguage } from '../settings';
 import type { CalendarCategory, CalendarEvent, CalendarEventInput, CalendarPriority, RepeatRule } from '../types/calendar';
 import { loadCalendarEvents, saveCalendarEvents } from '../calendarStorage';
@@ -32,13 +32,14 @@ function occurrences(events: CalendarEvent[], from: Date, to: Date): { event: Ca
       continue;
     }
     let cursor = new Date(base);
+    const monthDay = base.getDate();
     let guard = 0;
     while (cursor < to && guard++ < 500) {
       const end = new Date(cursor.getTime() + duration);
       if (end >= from) result.push({ event, start: new Date(cursor), end });
       if (event.repeat === 'daily') cursor.setDate(cursor.getDate() + 1);
       else if (event.repeat === 'weekly') cursor.setDate(cursor.getDate() + 7);
-      else cursor.setMonth(cursor.getMonth() + 1);
+      else { const nextMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1); const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate(); cursor = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(monthDay, lastDay), base.getHours(), base.getMinutes()); }
     }
   }
   return result.sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -91,11 +92,13 @@ export default function CalendarPage({ now, language }: Props) {
     const notified = new Set<string>();
     const check = () => {
       const current = new Date();
-      for (const event of events) {
+      const upcoming = occurrences(events, new Date(current.getTime() - 4 * DAY), new Date(current.getTime() + 2 * DAY));
+      for (const item of upcoming) {
+        const event = item.event;
         if (event.completed || event.reminder === 'none') continue;
         const minutes = event.reminder === 'custom' ? event.customReminderMinutes || 30 : Number(event.reminder);
-        const trigger = eventStart(event).getTime() - minutes * 60000;
-        const key = event.id + ':' + event.start;
+        const trigger = item.start.getTime() - minutes * 60000;
+        const key = event.id + ':' + item.start.toISOString();
         if (!notified.has(key) && current.getTime() >= trigger && current.getTime() < trigger + 60000) {
           new Notification(event.title, { body: event.description || (language === 'ru' ? 'Скоро начнётся событие' : 'Your event starts soon') });
           notified.add(key);
@@ -182,7 +185,7 @@ export default function CalendarPage({ now, language }: Props) {
   const weekDays = Array.from({ length: view === 'day' ? 1 : 7 }, (_, i) => addDays(view === 'day' ? cursor : range.from, i));
   const eventForDay = (day: Date) => visible.filter(x => dateKey(x.start) === dateKey(day));
   const renderEvent = (item: { event: CalendarEvent; start: Date; end: Date }, compact = false) => (
-    <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.color || categoryColors[item.event.category] } as React.CSSProperties}
+    <button key={item.event.id + item.start.toISOString()} type="button" className={`cal-event ${item.event.completed ? 'is-completed' : ''}`} style={{ '--event-color': item.event.color || categoryColors[item.event.category] } as CSSProperties}
       onClick={() => { setEditing(item.event); setModalOpen(true); }} draggable onDragStart={e => e.dataTransfer.setData('text/event-id', item.event.id)}>
       <span className="cal-event-time">{item.start.toLocaleTimeString(language === 'ru' ? 'ru-RU' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
       <span className="cal-event-name">{item.event.title}</span>{!compact && item.event.category === 'deadline' && <span className="cal-event-tag">{item.event.completed ? t.done : t.deadline}</span>}
