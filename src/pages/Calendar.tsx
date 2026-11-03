@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type CSSProperties } from 'react';
 import type { AppLanguage } from '../settings';
 import type { CalendarCategory, CalendarEvent, CalendarEventInput, CalendarPriority, RepeatRule } from '../types/calendar';
 import { loadCalendarEvents, saveCalendarEvents } from '../calendarStorage';
@@ -191,7 +191,8 @@ export default function CalendarPage({ now, language }: Props) {
   const [notice, setNotice] = useState('');
   const [notificationEnabled, setNotificationEnabled] = useState(typeof Notification !== 'undefined' && Notification.permission === 'granted');
   const [customMinutes, setCustomMinutes] = useState('30');
-  const [importInput, setImportInput] = useState<HTMLInputElement | null>(null);
+  const importInput = useRef<HTMLInputElement>(null);
+  const notifiedEvents = useRef(new Set<string>());
 
   useEffect(() => { if (!saveCalendarEvents(events)) setNotice(t.savedError); }, [events, t.savedError]);
   useEffect(() => {
@@ -200,7 +201,6 @@ export default function CalendarPage({ now, language }: Props) {
   }, [events]);
   useEffect(() => {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const notified = new Set<string>();
     const check = () => {
       const current = new Date();
       const upcoming = occurrences(events, new Date(current.getTime() - 4 * DAY), new Date(current.getTime() + 2 * DAY));
@@ -210,9 +210,9 @@ export default function CalendarPage({ now, language }: Props) {
         const minutes = event.reminder === 'custom' ? event.customReminderMinutes || 30 : Number(event.reminder);
         const trigger = item.start.getTime() - minutes * 60000;
         const key = event.id + ':' + item.start.toISOString();
-        if (!notified.has(key) && current.getTime() >= trigger && current.getTime() < trigger + 60000) {
+        if (!notifiedEvents.current.has(key) && current.getTime() >= trigger && current.getTime() < trigger + 60000) {
           new Notification(event.title, { body: event.description || (language === 'ru' ? 'Скоро начнётся событие' : 'Your event starts soon') });
-          notified.add(key);
+          notifiedEvents.current.add(key);
         }
       }
     };
@@ -398,7 +398,7 @@ export default function CalendarPage({ now, language }: Props) {
       </div></div>}
       {view === 'agenda' && <div className="agenda-list">{visible.map(item => <div className={`agenda-row ${item.event.completed ? 'is-completed' : ''}`} key={item.event.id + item.start.toISOString()}><div className="agenda-date">{formatDay(item.start, language, { weekday: 'short', day: 'numeric', month: 'short' })}<span>{item.start.toLocaleTimeString(language === 'ru' ? 'ru-RU' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span></div><div className="agenda-details"><button onClick={() => { setEditing(item.event); setModalOpen(true); }} className={`agenda-title ${item.event.completed ? 'is-completed' : ''}`}>{item.event.title}</button><p>{categoryName(item.event.category, t)}{item.event.subject ? ' · ' + item.event.subject : ''}{item.event.location ? ' · ' + item.event.location : ''}</p>{item.event.description && <small>{item.event.description}</small>}</div><label className="agenda-done"><input type="checkbox" checked={item.event.completed} onChange={() => toggleDone(item.event.id)} />{item.event.completed ? t.done : ''}</label></div>)}{visible.length === 0 && <p className="empty">{t.empty}</p>}</div>}
       {(view === 'month' || view === 'week' || view === 'day') && visible.length === 0 && <p className="empty calendar-empty">{t.empty}</p>}
-      <div className="calendar-footer"><div className="calendar-legend">{(['study','deadline','exam','work','personal','other'] as CalendarCategory[]).map(c => <span key={c}><i style={{ background: categoryColors[c] }} />{categoryName(c, t)}</span>)}</div><div className="calendar-tools"><button className="btn" onClick={exportICS}>{t.export}</button><button className="btn" onClick={() => importInput?.click()}>{t.import}</button><input ref={setImportInput} type="file" accept=".ics,text/calendar" hidden onChange={e => { void importICS(e.target.files?.[0]); e.currentTarget.value = ''; }} /><button className="btn" onClick={() => void enableNotifications()}>{notificationEnabled ? '✓ ' : ''}{t.permission}</button></div></div>
+      <div className="calendar-footer"><div className="calendar-legend">{(['study','deadline','exam','work','personal','other'] as CalendarCategory[]).map(c => <span key={c}><i style={{ background: categoryColors[c] }} />{categoryName(c, t)}</span>)}</div><div className="calendar-tools"><button className="btn" onClick={exportICS}>{t.export}</button><button className="btn" onClick={() => importInput.current?.click()}>{t.import}</button><input ref={importInput} type="file" accept=".ics,text/calendar" hidden onChange={e => { void importICS(e.target.files?.[0]); e.currentTarget.value = ''; }} /><button className="btn" onClick={() => void enableNotifications()}>{notificationEnabled ? '✓ ' : ''}{t.permission}</button></div></div>
       <p className="calendar-hint">{t.permissionHint}</p>
     </section>
     {modalOpen && editing && <EventModal event={editing} language={language} customMinutes={customMinutes} setCustomMinutes={setCustomMinutes} onClose={() => { setModalOpen(false); setEditing(null); }} onSave={saveEvent} onDelete={() => deleteEvent(editing)} />}
