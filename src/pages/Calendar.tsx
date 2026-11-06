@@ -3,6 +3,7 @@ import type { AppLanguage } from '../settings';
 import type { CalendarCategory, CalendarEvent, CalendarEventInput, CalendarPriority, RepeatRule } from '../types/calendar';
 import { loadCalendarEvents, saveCalendarEvents } from '../calendarStorage';
 import { removeTaskForCalendarEvent, syncCalendarEventToTask, syncCalendarEventsToTasks } from '../taskCalendarSync';
+import { loadSubjects } from '../subjects';
 
 type Props = { now: Date; language: AppLanguage };
 type View = 'month' | 'week' | 'day' | 'agenda';
@@ -360,7 +361,7 @@ export default function CalendarPage({ now, language }: Props) {
     }
   }
 
-  const subjects = Array.from(new Set(events.map(e => e.subject.trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  const subjects = Array.from(new Set([...events.map(e => e.subject.trim()), ...loadSubjects().map(subject => subject.name)].filter(Boolean))).sort((a, b) => a.localeCompare(b));
   const dayNames = Array.from({ length: 7 }, (_, i) => formatDay(addDays(monday(cursor), i), language, { weekday: 'short' }));
   const weekDays = Array.from({ length: view === 'day' ? 1 : 7 }, (_, i) => addDays(view === 'day' ? cursor : range.from, i));
   const eventForDay = (day: Date) => { const from = calendarDayStart(day); const to = calendarDayEnd(day); return visible.filter(item => item.start < to && item.end > from); };
@@ -433,7 +434,7 @@ function EventModal({ event, language, customMinutes, setCustomMinutes, onClose,
     <label className="field"><span>{t.desc}</span><textarea rows={2} value={value.description} onChange={e => set('description', e.target.value)} /></label>
     <div className="field-row"><label className="field"><span>{t.start}</span><input required type="datetime-local" value={value.start} onChange={e => set('start', e.target.value)} /></label><label className="field"><span>{t.end}</span><input required type="datetime-local" min={value.start} value={value.end} onChange={e => set('end', e.target.value)} /></label></div>
     <div className="field-row"><label className="field"><span>{t.category}</span><select value={value.category} onChange={e => { const c = e.target.value as CalendarCategory; set('category', c); set('color', categoryColors[c]); }}><option value="study">{t.study}</option><option value="deadline">{t.deadline}</option><option value="exam">{t.exam}</option><option value="work">{t.work}</option><option value="personal">{t.personal}</option><option value="other">{t.other}</option></select></label><label className="field"><span>{t.priority}</span><select value={value.priority} onChange={e => set('priority', e.target.value as CalendarPriority)}><option value="low">{t.low}</option><option value="medium">{t.medium}</option><option value="high">{t.high}</option></select></label></div>
-    <div className="field-row"><label className="field"><span>{t.subject}</span><input value={value.subject} onChange={e => set('subject', e.target.value)} /></label><label className="field"><span>{t.location}</span><input value={value.location} onChange={e => set('location', e.target.value)} /></label></div>
+    <div className="field-row"><label className="field"><span>{t.subject}</span><input list="studentflow-calendar-subjects" value={value.subject} onChange={e => set('subject', e.target.value)} /><datalist id="studentflow-calendar-subjects">{loadSubjects().map(subject => <option key={subject.id} value={subject.name} />)}</datalist></label><label className="field"><span>{t.location}</span><input value={value.location} onChange={e => set('location', e.target.value)} /></label></div>
     <div className="field-row"><label className="field"><span>{t.reminder}</span><select value={value.reminder} onChange={e => set('reminder', e.target.value as CalendarEventInput['reminder'])}><option value="none">{t.none}</option><option value="15">{t.min15}</option><option value="60">{t.hour1}</option><option value="1440">{t.day1}</option><option value="4320">{t.day3}</option><option value="custom">{t.custom}</option></select></label><label className="field"><span>{t.repeat}</span><select value={value.repeat} onChange={e => set('repeat', e.target.value as RepeatRule)}><option value="none">{t.repeatNone}</option><option value="daily">{t.daily}</option><option value="weekly">{t.weekly}</option><option value="monthly">{t.monthly}</option></select></label></div>
     {value.reminder === 'custom' && <label className="field"><span>{t.customMinutes}</span><input type="number" min="1" max="10080" value={customMinutes} onChange={e => setCustomMinutes(e.target.value)} onBlur={() => set('customReminderMinutes', Math.max(1, Number(customMinutes) || 30))} /></label>}
     <label className="field color-field"><span>{t.color}</span><input type="color" value={value.color} onChange={e => set('color', e.target.value)} /></label>
