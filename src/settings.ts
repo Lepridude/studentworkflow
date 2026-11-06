@@ -36,6 +36,7 @@ export function loadUserSettings(): UserSettings {
 export function saveUserSettings(settings: UserSettings): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(settings));
+    window.dispatchEvent(new Event('studentflow:data-changed'));
   } catch {
     // The current session remains usable without persistent settings.
   }
