@@ -95,6 +95,7 @@ export default function AuthGate() {
           if (active) {
             await activateSession(verified);
             if (callbackType === 'recovery') setMode('reset');
+            setReady(true);
           }
           return;
         } catch (cause) {
