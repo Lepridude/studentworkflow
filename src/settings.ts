@@ -11,12 +11,13 @@ export type UserSettings = {
   density: AppDensity;
   style: AppStyle;
   sidebarCollapsed: boolean;
+  avatarDataUrl: string | null;
 };
 
 const KEY = 'studentworkflow.settings.v1';
 const DEFAULT_SETTINGS: UserSettings = {
   name: 'Alex', language: 'en', theme: 'light',
-  accent: 'green', density: 'comfortable', style: 'standard', sidebarCollapsed: false,
+  accent: 'green', density: 'comfortable', style: 'standard', sidebarCollapsed: false, avatarDataUrl: null,
 };
 
 export function loadUserSettings(): UserSettings {
@@ -34,6 +35,7 @@ export function loadUserSettings(): UserSettings {
         density: candidate.density === 'compact' || candidate.density === 'comfortable' ? candidate.density : DEFAULT_SETTINGS.density,
         style: candidate.style === 'supabase' || candidate.style === 'minimal' || candidate.style === 'soft' || candidate.style === 'standard' ? candidate.style : DEFAULT_SETTINGS.style,
         sidebarCollapsed: typeof candidate.sidebarCollapsed === 'boolean' ? candidate.sidebarCollapsed : DEFAULT_SETTINGS.sidebarCollapsed,
+        avatarDataUrl: typeof candidate.avatarDataUrl === 'string' && candidate.avatarDataUrl.startsWith('data:image/') ? candidate.avatarDataUrl : null,
       };
     }
   } catch {
