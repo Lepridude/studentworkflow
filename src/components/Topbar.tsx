@@ -6,10 +6,10 @@ import type { PageId } from './Sidebar';
 import { loadTasks } from '../storage';
 import { loadCalendarEvents } from '../calendarStorage';
 
-type Props = { now: Date; userName: string; language: AppLanguage; onNavigate: (page: PageId) => void };
+type Props = { now: Date; userName: string; avatarDataUrl: string | null; language: AppLanguage; onNavigate: (page: PageId) => void };
 type SearchResult = { id: string; title: string; detail: string; page: PageId; kind: 'task' | 'event' };
 
-export default function Topbar({ now, userName, language, onNavigate }: Props) {
+export default function Topbar({ now, userName, avatarDataUrl, language, onNavigate }: Props) {
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const ru = language === 'ru';
@@ -62,6 +62,6 @@ export default function Topbar({ now, userName, language, onNavigate }: Props) {
         </button>) : <p className="search-empty">{ru ? 'Ничего не найдено' : 'No results found'}</p>}
       </div>}
     </div>
-    <div className="avatar" title={userName} aria-label={`Profile: ${userName}`}>{userName.charAt(0).toUpperCase()}</div>
+    <div className="avatar" title={userName} aria-label={`Profile: ${userName}`}>{avatarDataUrl ? <img src={avatarDataUrl} alt="" /> : userName.trim().charAt(0).toUpperCase()}</div>
   </header>;
 }
