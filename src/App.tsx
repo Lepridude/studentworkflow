@@ -4,6 +4,7 @@ import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
 import CalendarPage from './pages/Calendar';
 import TasksPage from './pages/Tasks';
+import SubjectsPage from './pages/Subjects';
 import {
   loadUserSettings,
   saveUserSettings,
@@ -34,6 +35,7 @@ export default function App() {
   const titles: Record<Exclude<PageId, 'dashboard'>, string> = {
     tasks: ru ? 'Мои задачи' : 'My Tasks',
     calendar: ru ? 'Календарь' : 'Calendar',
+    subjects: ru ? 'Предметы' : 'Subjects',
     settings: ru ? 'Настройки' : 'Settings',
   };
 
@@ -74,6 +76,8 @@ export default function App() {
             <TasksPage now={now} language={settings.language} />
           ) : page === 'calendar' ? (
             <CalendarPage now={now} language={settings.language} />
+          ) : page === 'subjects' ? (
+            <SubjectsPage language={settings.language} />
           ) : page === 'settings' ? (
             <div className="page">
               <div className="page-head">
