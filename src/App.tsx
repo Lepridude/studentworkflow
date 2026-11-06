@@ -28,6 +28,8 @@ export default function App() {
 
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
+    document.documentElement.dataset.accent = settings.accent;
+    document.documentElement.dataset.density = settings.density;
   }, [settings.theme]);
 
   const ru = settings.language === 'ru';
@@ -55,6 +57,8 @@ export default function App() {
         active={page}
         onNavigate={setPage}
         language={settings.language}
+        collapsed={settings.sidebarCollapsed}
+        onToggleCollapsed={() => setSettings(old => ({ ...old, sidebarCollapsed: !old.sidebarCollapsed }))}
       />
 
       <div className="main">
@@ -83,7 +87,7 @@ export default function App() {
               <div className="page-head">
                 <h1>{titles.settings}</h1>
                 <p className="muted">
-                  {ru ? 'Профиль и язык интерфейса.' : 'Profile and interface language.'}
+                  {ru ? 'Профиль, язык и внешний вид приложения.' : 'Profile, language and app appearance.'}
                 </p>
               </div>
 
@@ -133,7 +137,31 @@ export default function App() {
                   >
                     <option value="light">{ru ? 'Светлая' : 'Light'}</option>
                     <option value="dark">{ru ? 'Тёмная' : 'Dark'}</option>
+                    <option value="supabase">{ru ? 'Supabase — графитовая' : 'Supabase — graphite'}</option>
                   </select>
+                </label>
+
+                <label className="field">
+                  <span>{ru ? 'Акцентный цвет' : 'Accent color'}</span>
+                  <select value={settings.accent} onChange={e => setSettings(old => ({ ...old, accent: e.target.value as UserSettings['accent'] }))}>
+                    <option value="green">{ru ? 'Зелёный' : 'Green'}</option>
+                    <option value="indigo">{ru ? 'Индиго' : 'Indigo'}</option>
+                    <option value="blue">{ru ? 'Синий' : 'Blue'}</option>
+                    <option value="orange">{ru ? 'Оранжевый' : 'Orange'}</option>
+                  </select>
+                </label>
+
+                <label className="field">
+                  <span>{ru ? 'Плотность интерфейса' : 'Interface density'}</span>
+                  <select value={settings.density} onChange={e => setSettings(old => ({ ...old, density: e.target.value as UserSettings['density'] }))}>
+                    <option value="comfortable">{ru ? 'Комфортная' : 'Comfortable'}</option>
+                    <option value="compact">{ru ? 'Компактная' : 'Compact'}</option>
+                  </select>
+                </label>
+
+                <label className="settings-toggle">
+                  <input type="checkbox" checked={settings.sidebarCollapsed} onChange={e => setSettings(old => ({ ...old, sidebarCollapsed: e.target.checked }))} />
+                  <span>{ru ? 'Сворачивать боковую панель' : 'Collapse sidebar'}</span>
                 </label>
 
                 <p className="muted">
