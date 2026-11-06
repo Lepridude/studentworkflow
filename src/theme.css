@@ -254,3 +254,86 @@
   .sidebar.collapsed { width:100%; padding:6px 8px calc(6px + env(safe-area-inset-bottom)); }
   .sidebar.collapsed .nav-label { display:none; }
 }
+
+
+
+/* Strongly differentiated visual systems */
+:root[data-style='standard'] {
+  --radius: 14px;
+  --shadow: 0 2px 5px rgba(25,35,60,.06), 0 12px 32px rgba(25,35,60,.045);
+}
+:root[data-style='supabase'] {
+  --radius: 8px;
+  --shadow: none;
+}
+:root[data-style='minimal'] {
+  --radius: 4px;
+  --shadow: none;
+}
+:root[data-style='soft'] {
+  --radius: 22px;
+  --shadow: 0 10px 35px rgba(48,65,100,.12);
+}
+:root[data-style='standard'] .card,
+:root[data-style='standard'] .stat-card { border-radius:14px; box-shadow:var(--shadow); }
+:root[data-style='supabase'] body { letter-spacing:.005em; }
+:root[data-style='supabase'] .sidebar { background:var(--surface); border-right:1px solid var(--border); }
+:root[data-style='supabase'] .topbar { background:var(--surface); }
+:root[data-style='supabase'] .card,
+:root[data-style='supabase'] .stat-card { border-radius:8px; box-shadow:none; border:1px solid var(--border); }
+:root[data-style='supabase'] .card { padding:16px; }
+:root[data-style='supabase'] .nav-item { min-height:36px; border-radius:6px; font-size:13px; }
+:root[data-style='supabase'] .btn { border-radius:6px; font-size:13px; }
+:root[data-style='supabase'] .field input,
+:root[data-style='supabase'] .field select,
+:root[data-style='supabase'] .field textarea,
+:root[data-style='supabase'] .search { border-radius:6px; background:var(--bg); }
+:root[data-style='supabase'] .page-head { padding-bottom:14px; border-bottom:1px solid var(--border); }
+:root[data-style='supabase'] .page-head h1 { font-size:25px; font-weight:650; letter-spacing:-.04em; }
+:root[data-style='minimal'] .card,
+:root[data-style='minimal'] .stat-card { border-radius:4px; box-shadow:none; border-color:transparent; }
+:root[data-style='minimal'] .card { padding:22px 0; border-top:1px solid var(--border); background:transparent; }
+:root[data-style='minimal'] .stat-card { padding:12px 0; background:transparent; }
+:root[data-style='minimal'] .topbar { box-shadow:none; border-bottom:0; background:transparent; }
+:root[data-style='minimal'] .sidebar { background:transparent; border-right:0; }
+:root[data-style='minimal'] .nav-item { border-radius:4px; padding-left:8px; }
+:root[data-style='minimal'] .btn,
+:root[data-style='minimal'] .field input,
+:root[data-style='minimal'] .field select,
+:root[data-style='minimal'] .field textarea,
+:root[data-style='minimal'] .search { border-radius:4px; box-shadow:none; }
+:root[data-style='minimal'] .page-head { margin-bottom:28px; }
+:root[data-style='soft'] .card,
+:root[data-style='soft'] .stat-card { border-radius:22px; box-shadow:var(--shadow); border-color:transparent; }
+:root[data-style='soft'] .card { padding:24px; }
+:root[data-style='soft'] .stat-card { padding:22px; }
+:root[data-style='soft'] .sidebar { margin:10px; height:calc(100vh - 20px); border:1px solid var(--border); border-radius:22px; box-shadow:var(--shadow); }
+:root[data-style='soft'] .topbar { margin:10px 10px 0; border:1px solid var(--border); border-radius:18px; }
+:root[data-style='soft'] .btn,
+:root[data-style='soft'] .field input,
+:root[data-style='soft'] .field select,
+:root[data-style='soft'] .field textarea,
+:root[data-style='soft'] .search { border-radius:14px; }
+:root[data-style='soft'] .nav-item { border-radius:14px; padding-top:12px; padding-bottom:12px; }
+:root[data-style='soft'] .logo-mark { border-radius:14px; }
+
+/* Sidebar collapse: layout state is applied to the app root, not only the aside. */
+.app .sidebar { width:var(--sidebar-w); flex:0 0 var(--sidebar-w); transition:width .2s ease, flex-basis .2s ease, padding .2s ease; }
+.app.sidebar-is-collapsed .sidebar { width:68px !important; flex-basis:68px !important; padding-left:8px; padding-right:8px; }
+.app.sidebar-is-collapsed .sidebar .logo { justify-content:center; padding-left:0; padding-right:0; }
+.app.sidebar-is-collapsed .sidebar .logo-text,
+.app.sidebar-is-collapsed .sidebar .nav-label { display:none !important; }
+.app.sidebar-is-collapsed .sidebar .nav-item { justify-content:center; gap:0; padding-left:8px; padding-right:8px; }
+.sidebar { position:sticky; }
+.sidebar-collapse { right:-12px; top:18px; width:24px; height:24px; box-shadow:0 2px 8px rgba(0,0,0,.12); }
+.app.sidebar-is-collapsed .sidebar-collapse { right:-12px; }
+@media (max-width:1024px) and (min-width:641px) {
+  .app:not(.sidebar-is-collapsed) .sidebar { width:var(--sidebar-w); flex-basis:var(--sidebar-w); }
+  .app.sidebar-is-collapsed .sidebar { width:68px !important; flex-basis:68px !important; }
+}
+@media (max-width:640px) {
+  .app .sidebar, .app.sidebar-is-collapsed .sidebar {
+    width:100% !important; flex-basis:auto !important;
+    margin:0; height:auto; border-radius:0;
+  }
+}
