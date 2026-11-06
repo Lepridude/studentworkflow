@@ -16,6 +16,8 @@ export default function Sidebar({ active, onNavigate, language, collapsed, onTog
     <nav className="nav" aria-label={language === 'ru' ? 'Основная навигация' : 'Main navigation'}>
       {ITEMS.map((item) => <button key={item.id} type="button"
         className={`nav-item${active === item.id ? ' active' : ''}`}
+        title={labels[item.id]}
+        aria-label={labels[item.id]}
         aria-current={active === item.id ? 'page' : undefined} onClick={() => onNavigate(item.id)}>
         <Icon name={item.icon} /><span className="nav-label">{labels[item.id]}</span>
       </button>)}
