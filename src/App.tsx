@@ -53,7 +53,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app${settings.sidebarCollapsed ? " sidebar-is-collapsed" : ""}`}>
       <Sidebar
         active={page}
         onNavigate={setPage}
