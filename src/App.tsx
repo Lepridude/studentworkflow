@@ -30,7 +30,7 @@ export default function App() {
     document.documentElement.dataset.theme = settings.theme;
     document.documentElement.dataset.accent = settings.accent;
     document.documentElement.dataset.density = settings.density;
-  }, [settings.theme]);
+  }, [settings.theme, settings.accent, settings.density]);
 
   const ru = settings.language === 'ru';
 
