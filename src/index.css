@@ -944,3 +944,44 @@ button {
 .agenda-row.is-completed .agenda-date span {
   color: #16a34a;
 }
+
+
+/* Task search and filters */
+.task-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.task-filters input,
+.task-filters select {
+  min-height: 38px;
+  min-width: 150px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+}
+.task-filters input {
+  flex: 1 1 220px;
+}
+.task-filter-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 560px) {
+  .task-filters > * {
+    width: 100%;
+  }
+  .task-filter-count {
+    margin-left: 0;
+  }
+}
