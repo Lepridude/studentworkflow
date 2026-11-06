@@ -1,9 +1,10 @@
-import type { Task, Priority, StoredStatus } from './types/task';
+import type { Task, Priority, StoredStatus, TaskRepeatRule } from './types/task';
 
 const KEY = 'studentworkflow.tasks.v1';
 
 const PRIORITIES: readonly Priority[] = ['low', 'medium', 'high'];
 const STATUSES: readonly StoredStatus[] = ['todo', 'in_progress', 'done'];
+const REPEATS: readonly TaskRepeatRule[] = ['none', 'daily', 'weekly', 'monthly'];
 
 function isValidTask(value: unknown): value is Task {
   if (!value || typeof value !== 'object') return false;
@@ -21,7 +22,10 @@ function isValidTask(value: unknown): value is Task {
     && STATUSES.includes(task.status as StoredStatus)
     && typeof task.createdAt === 'string'
     && !Number.isNaN(Date.parse(task.createdAt))
-    && (task.calendarEventId === undefined || typeof task.calendarEventId === 'string');
+    && (task.calendarEventId === undefined || typeof task.calendarEventId === 'string')
+    && (task.repeat === undefined || REPEATS.includes(task.repeat as TaskRepeatRule))
+    && (task.repeatInterval === undefined || (Number.isInteger(task.repeatInterval) && task.repeatInterval >= 1))
+    && (task.repeatUntil === undefined || (typeof task.repeatUntil === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(task.repeatUntil)));
 }
 
 /** Reads persisted tasks and uses demo data only on a genuinely fresh install. */
