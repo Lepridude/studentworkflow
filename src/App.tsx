@@ -30,7 +30,8 @@ export default function App() {
     document.documentElement.dataset.theme = settings.theme;
     document.documentElement.dataset.accent = settings.accent;
     document.documentElement.dataset.density = settings.density;
-  }, [settings.theme, settings.accent, settings.density]);
+    document.documentElement.dataset.style = settings.style;
+  }, [settings.theme, settings.accent, settings.density, settings.style]);
 
   const ru = settings.language === 'ru';
 
@@ -148,6 +149,16 @@ export default function App() {
                     <option value="indigo">{ru ? 'Индиго' : 'Indigo'}</option>
                     <option value="blue">{ru ? 'Синий' : 'Blue'}</option>
                     <option value="orange">{ru ? 'Оранжевый' : 'Orange'}</option>
+                  </select>
+                </label>
+
+                <label className="field">
+                  <span>{ru ? 'Визуальный стиль' : 'Visual style'}</span>
+                  <select value={settings.style} onChange={e => setSettings(old => ({ ...old, style: e.target.value as UserSettings['style'] }))}>
+                    <option value="standard">{ru ? 'Стандартный — сбалансированный' : 'Standard — balanced'}</option>
+                    <option value="supabase">{ru ? 'Supabase — строгий рабочий интерфейс' : 'Supabase — professional workspace'}</option>
+                    <option value="minimal">{ru ? 'Минимализм — плоский и чистый' : 'Minimal — flat and clean'}</option>
+                    <option value="soft">{ru ? 'Мягкий — округлые карточки' : 'Soft — rounded surfaces'}</option>
                   </select>
                 </label>
 
