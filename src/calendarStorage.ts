@@ -55,6 +55,7 @@ export function loadCalendarEvents(): CalendarEvent[] {
 export function saveCalendarEvents(events: CalendarEvent[]): boolean {
   try {
     localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+    window.dispatchEvent(new Event('studentflow:data-changed'));
     return true;
   } catch {
     return false;
