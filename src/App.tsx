@@ -193,6 +193,10 @@ export default function App() {
             </div>
           )}
         </main>
+        <footer className="site-footer">
+          <span>© 2026 StudentFlow</span>
+          <span>АРХАНГЕЛ сделал это вместе с CODEX</span>
+        </footer>
       </div>
     </div>
   );
