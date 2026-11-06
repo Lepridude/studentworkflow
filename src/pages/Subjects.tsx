@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { AppLanguage } from '../settings';
 import { createSubject, deleteSubject, loadSubjects, updateSubject, type Subject } from '../subjects';
 
@@ -14,14 +14,8 @@ export default function SubjectsPage({ language }: Props) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  const counts = useMemo(() => {
-    const result = new Map<string, number>();
-    for (const subject of subjects) result.set(subject.name, 0);
-    return result;
-  }, [subjects]);
-
   function resetForm() { setName(''); setColor(COLORS[0]); setEditingId(null); setError(''); }
-  function submit(e: React.FormEvent) {
+  function submit(e: FormEvent) {
     e.preventDefault();
     const ok = editingId ? updateSubject(editingId, name, color) : Boolean(createSubject(name, color));
     if (!ok) {
