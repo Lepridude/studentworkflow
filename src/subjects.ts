@@ -38,6 +38,7 @@ export function loadSubjects(): Subject[] {
 export function saveSubjects(subjects: Subject[]): boolean {
   try {
     localStorage.setItem(KEY, JSON.stringify(subjects));
+    window.dispatchEvent(new Event('studentflow:data-changed'));
     return true;
   } catch {
     return false;
