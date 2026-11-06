@@ -18,7 +18,7 @@ export default function TasksPage({ now, language }: Props) {
   const ru = language === 'ru';
   useEffect(() => { saveTasks(tasks); syncTasksToCalendar(tasks); }, [tasks]);
   const addTask = useCallback((input: NewTaskInput) => {
-    const task: Task = { id: newId(), title: input.title, description: input.description, subject: input.subject, dueDate: input.dueDate, priority: input.priority, status: 'todo', createdAt: new Date().toISOString() };
+    const task: Task = { id: newId(), title: input.title, description: input.description, subject: input.subject, dueDate: input.dueDate, priority: input.priority, status: 'todo', repeat: input.repeat, repeatInterval: input.repeatInterval, repeatUntil: input.repeatUntil, createdAt: new Date().toISOString() };
     setTasks(prev => [task, ...prev]);
     setModalOpen(false);
   }, []);
