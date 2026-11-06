@@ -1,10 +1,32 @@
 import type { Priority, Status, Task } from '../types/task';
 import { daysUntil } from './dates';
 
-/** Итоговый статус: незавершённая задача с прошедшим сроком — overdue. */
+/** Возвращает ближайшую дату повторяющейся задачи, не сдвигая исходную дату в хранилище. */
+export function effectiveDueDate(task: Task, now: Date = new Date()): string {
+  if (!task.repeat || task.repeat === 'none') return task.dueDate;
+  const [year, month, day] = task.dueDate.split('-').map(Number);
+  let date = new Date(year, month - 1, day);
+  const interval = Math.max(1, task.repeatInterval || 1);
+  const limit = task.repeatUntil ? new Date(task.repeatUntil + 'T23:59:59') : null;
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let guard = 0;
+  while (date < today && guard++ < 10000) {
+    if (task.repeat === 'daily') date.setDate(date.getDate() + interval);
+    else if (task.repeat === 'weekly') date.setDate(date.getDate() + 7 * interval);
+    else {
+      const nextMonth = new Date(date.getFullYear(), date.getMonth() + interval, 1);
+      const lastDay = new Date(nextMonth.getFullYear(), nextMonth.getMonth() + 1, 0).getDate();
+      date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), Math.min(day, lastDay));
+    }
+  }
+  if (limit && date > limit) return task.dueDate;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+/** Итоговый статус учитывает ближайшее вхождение повторяющейся задачи. */
 export function getStatus(task: Task, now: Date = new Date()): Status {
   if (task.status === 'done') return 'done';
-  if (daysUntil(task.dueDate, now) < 0) return 'overdue';
+  if (daysUntil(effectiveDueDate(task, now), now) < 0) return 'overdue';
   return task.status;
 }
 
@@ -34,7 +56,7 @@ export function upcomingDeadlines(tasks: Task[], limit = 4): Task[] {
     .filter((t) => t.status !== 'done')
     .sort(
       (a, b) =>
-        a.dueDate.localeCompare(b.dueDate) ||
+        effectiveDueDate(a).localeCompare(effectiveDueDate(b)) ||
         PRIORITY_WEIGHT[a.priority] - PRIORITY_WEIGHT[b.priority],
     )
     .slice(0, limit);
