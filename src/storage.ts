@@ -13,7 +13,7 @@ function isValidTask(value: unknown): value is Task {
     && task.id.length > 0
     && typeof task.title === 'string'
     && typeof task.description === 'string'
-    && typeof task.subject === 'string'
+    && (task.subject === undefined || typeof task.subject === 'string')
     && typeof task.dueDate === 'string'
     && /^\d{4}-\d{2}-\d{2}$/.test(task.dueDate)
     && !Number.isNaN(new Date(`${task.dueDate}T00:00:00`).getTime())
@@ -32,7 +32,7 @@ export function loadTasks(): Task[] {
 
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed)
-      ? parsed.filter(isValidTask).filter(task => !/^demo-[1-7]$/.test(task.id))
+      ? parsed.filter(isValidTask).filter(task => !/^demo-[1-7]$/.test(task.id)).map(task => ({ ...task, subject: task.subject || '' }))
       : [];
   } catch {
     return [];
