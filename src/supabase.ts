@@ -60,6 +60,12 @@ export const supabaseAuth = {
   recover(email: string) {
     return request<null>('/auth/v1/recover', { method: 'POST', body: JSON.stringify({ email }) });
   },
+  verifyEmail(tokenHash: string, type: string) {
+    return request<AuthSession>(`/auth/v1/verify`, { method: 'POST', body: JSON.stringify({ token_hash: tokenHash, type }) });
+  },
+  updatePassword(token: string, password: string) {
+    return request<{ id: string }>('/auth/v1/user', { method: 'PUT', body: JSON.stringify({ password }) }, token);
+  },
 };
 
 export type WorkspaceData = {
