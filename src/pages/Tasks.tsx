@@ -6,6 +6,7 @@ import { loadTasks, saveTasks } from '../storage';
 import { getStatus, newId } from '../utils/tasks';
 import { removeCalendarEventForTask, syncTasksToCalendar } from '../taskCalendarSync';
 import type { AppLanguage } from '../settings';
+import { loadSubjects } from '../subjects';
 
 type Props = { now: Date; language: AppLanguage };
 export default function TasksPage({ now, language }: Props) {
@@ -28,7 +29,7 @@ export default function TasksPage({ now, language }: Props) {
     removeCalendarEventForTask(id);
     setTasks(prev => prev.filter(task => task.id !== id));
   }, []);
-  const subjects = Array.from(new Set(tasks.map(task => task.subject.trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b, language === 'ru' ? 'ru' : 'en'));
+  const subjects = Array.from(new Set([...tasks.map(task => task.subject.trim()), ...loadSubjects().map(subject => subject.name)].filter(Boolean))).sort((a, b) => a.localeCompare(b, language === 'ru' ? 'ru' : 'en'));
   const normalizedQuery = query.trim().toLocaleLowerCase(language === 'ru' ? 'ru' : 'en');
   const filteredTasks = tasks.filter(task => {
     const matchesQuery = !normalizedQuery || [task.title, task.description, task.subject].some(value => value.toLocaleLowerCase(language === 'ru' ? 'ru' : 'en').includes(normalizedQuery));
