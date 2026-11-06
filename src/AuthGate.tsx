@@ -228,11 +228,7 @@ export default function AuthGate() {
   }
   if (session) {
     return <div className="authenticated-app">
-      <div className="account-bar">
-        <span>{session.user.email}</span>
-        <button className="btn" onClick={() => void logout()} disabled={busy}>Выйти</button>
-      </div>
-      <App />
+      <App email={session.user.email ?? ''} onLogout={() => void logout()} logoutBusy={busy} />
     </div>;
   }
 
