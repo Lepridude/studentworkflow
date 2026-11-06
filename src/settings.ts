@@ -1,35 +1,41 @@
 export type AppLanguage = 'ru' | 'en';
-export type AppTheme = 'light' | 'dark';
-export type UserSettings = { name: string; language: AppLanguage; theme: AppTheme };
+export type AppTheme = 'light' | 'dark' | 'supabase';
+export type AppAccent = 'green' | 'indigo' | 'blue' | 'orange';
+export type AppDensity = 'comfortable' | 'compact';
+export type UserSettings = {
+  name: string;
+  language: AppLanguage;
+  theme: AppTheme;
+  accent: AppAccent;
+  density: AppDensity;
+  sidebarCollapsed: boolean;
+};
 
 const KEY = 'studentworkflow.settings.v1';
-const DEFAULT_SETTINGS: UserSettings = { name: 'Alex', language: 'en', theme: 'light' };
+const DEFAULT_SETTINGS: UserSettings = {
+  name: 'Alex', language: 'en', theme: 'light',
+  accent: 'green', density: 'comfortable', sidebarCollapsed: false,
+};
 
 export function loadUserSettings(): UserSettings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_SETTINGS;
-
     const value: unknown = JSON.parse(raw);
     if (value && typeof value === 'object') {
       const candidate = value as Partial<UserSettings>;
-
       return {
         name: typeof candidate.name === 'string' ? candidate.name : DEFAULT_SETTINGS.name,
-        language:
-          candidate.language === 'ru' || candidate.language === 'en'
-            ? candidate.language
-            : DEFAULT_SETTINGS.language,
-        theme:
-          candidate.theme === 'dark' || candidate.theme === 'light'
-            ? candidate.theme
-            : DEFAULT_SETTINGS.theme,
+        language: candidate.language === 'ru' || candidate.language === 'en' ? candidate.language : DEFAULT_SETTINGS.language,
+        theme: candidate.theme === 'dark' || candidate.theme === 'supabase' || candidate.theme === 'light' ? candidate.theme : DEFAULT_SETTINGS.theme,
+        accent: candidate.accent === 'green' || candidate.accent === 'indigo' || candidate.accent === 'blue' || candidate.accent === 'orange' ? candidate.accent : DEFAULT_SETTINGS.accent,
+        density: candidate.density === 'compact' || candidate.density === 'comfortable' ? candidate.density : DEFAULT_SETTINGS.density,
+        sidebarCollapsed: typeof candidate.sidebarCollapsed === 'boolean' ? candidate.sidebarCollapsed : DEFAULT_SETTINGS.sidebarCollapsed,
       };
     }
   } catch {
     // Keep the app usable if localStorage contains invalid data or is unavailable.
   }
-
   return DEFAULT_SETTINGS;
 }
 
