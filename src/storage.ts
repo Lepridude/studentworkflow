@@ -25,7 +25,7 @@ function isValidTask(value: unknown): value is Task {
     && (task.calendarEventId === undefined || typeof task.calendarEventId === 'string')
     && (task.repeat === undefined || REPEATS.includes(task.repeat as TaskRepeatRule))
     && (task.repeatInterval === undefined || (Number.isInteger(task.repeatInterval) && task.repeatInterval >= 1))
-    && (task.repeatUntil === undefined || (typeof task.repeatUntil === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(task.repeatUntil)))
+    && (task.repeatUntil === undefined || (typeof task.repeatUntil === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(task.repeatUntil)))
     && (task.repeatUntil === undefined || !task.repeat || task.repeat === 'none' || task.repeatUntil >= task.dueDate);
 }
 
