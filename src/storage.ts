@@ -48,6 +48,7 @@ export function loadTasks(): Task[] {
 export function saveTasks(tasks: Task[]): boolean {
   try {
     localStorage.setItem(KEY, JSON.stringify(tasks));
+    window.dispatchEvent(new Event('studentflow:data-changed'));
     return true;
   } catch {
     return false;
