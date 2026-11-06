@@ -6,8 +6,8 @@ export type AuthSession = {
   user: AuthUser;
 };
 
-const url = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, '');
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const url = (import.meta.env.VITE_SUPABASE_URL || 'https://xodyomjvkjjqflzbtflo.supabase.co').replace(/\/$/, '');
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_7zz3JiIYtX79-CFVl8wpow_6OyDeNeM';
 
 export const isSupabaseConfigured = Boolean(url && anonKey);
 
@@ -41,7 +41,7 @@ async function request<T>(path: string, init: RequestInit = {}, token?: string):
 export const supabaseAuth = {
   signUp(email: string, password: string) {
     return request<{ user: AuthUser; session: AuthSession | null }>('/auth/v1/signup', {
-      method: 'POST', body: JSON.stringify({ email, password }),
+      method: 'POST', body: JSON.stringify({ email, password, options: { emailRedirectTo: window.location.origin } }),
     });
   },
   signIn(email: string, password: string) {
@@ -58,7 +58,7 @@ export const supabaseAuth = {
     return request<null>('/auth/v1/logout', { method: 'POST' }, token);
   },
   recover(email: string) {
-    return request<null>('/auth/v1/recover', { method: 'POST', body: JSON.stringify({ email }) });
+    return request<null>(`/auth/v1/recover?redirect_to=${encodeURIComponent(window.location.origin)}`, { method: 'POST', body: JSON.stringify({ email }) });
   },
   verifyEmail(tokenHash: string, type: string) {
     return request<AuthSession>(`/auth/v1/verify`, { method: 'POST', body: JSON.stringify({ token_hash: tokenHash, type }) });
