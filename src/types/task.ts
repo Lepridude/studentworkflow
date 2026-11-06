@@ -21,4 +21,5 @@ export type NewTaskInput = {
   description: string;
   dueDate: string;
   priority: Priority;
+  subject: string;
 };
