@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import App from './App';
 import {
   isSupabaseConfigured, loadWorkspace, saveWorkspace, supabaseAuth,
@@ -60,6 +60,7 @@ export default function AuthGate() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const syncQueue = useRef<Promise<void>>(Promise.resolve());
 
   const activateSession = useCallback(async (next: AuthSession) => {
     storeSession(next);
@@ -143,11 +144,15 @@ export default function AuthGate() {
     const sync = () => {
       if (timeout) window.clearTimeout(timeout);
       timeout = window.setTimeout(async () => {
-        try {
-          if (!disposed) await saveWorkspace(session.user.id, session.access_token, readLocalWorkspace());
-        } catch (cause) {
-          console.error('StudentFlow cloud sync failed:', cause);
-        }
+        if (disposed) return;
+        const snapshot = readLocalWorkspace();
+        syncQueue.current = syncQueue.current
+          .catch(() => undefined)
+          .then(() => saveWorkspace(session.user.id, session.access_token, snapshot))
+          .catch(cause => {
+            console.error('StudentFlow cloud sync failed:', cause);
+          });
+        await syncQueue.current;
       }, 700);
     };
     window.addEventListener('studentflow:data-changed', sync);
