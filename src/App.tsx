@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState, type ChangeEvent } from 'react';
 import Sidebar, { type PageId } from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Dashboard from './pages/Dashboard';
@@ -11,7 +11,9 @@ import {
   type UserSettings,
 } from './settings';
 
-export default function App() {
+type AppProps = { email: string; onLogout: () => void; logoutBusy: boolean };
+
+export default function App({ email, onLogout, logoutBusy }: AppProps) {
   const [page, setPage] = useState<PageId>('dashboard');
   const [now, setNow] = useState(() => new Date());
   const [settings, setSettings] = useState<UserSettings>(loadUserSettings);
@@ -66,6 +68,7 @@ export default function App() {
         <Topbar
           now={now}
           userName={settings.name}
+          avatarDataUrl={settings.avatarDataUrl}
           language={settings.language}
           onNavigate={setPage}
         />
@@ -94,6 +97,59 @@ export default function App() {
 
               <section className="card">
                 <h2>{ru ? 'Профиль' : 'Profile'}</h2>
+
+                <div className="profile-avatar-editor">
+                  <div className="avatar avatar-preview">
+                    {settings.avatarDataUrl ? <img src={settings.avatarDataUrl} alt={ru ? 'Аватар профиля' : 'Profile avatar'} /> : settings.name.trim().charAt(0).toUpperCase()}
+                  </div>
+                  <div className="profile-avatar-actions">
+                    <label className="btn avatar-upload">
+                      {ru ? 'Загрузить фото' : 'Upload photo'}
+                      <input type="file" accept="image/png,image/jpeg,image/webp" onChange={async (event: ChangeEvent<HTMLInputElement>) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = '';
+                        if (!file) return;
+                        if (!file.type.startsWith('image/')) return;
+                        if (file.size > 8 * 1024 * 1024) {
+                          window.alert(ru ? 'Файл должен быть меньше 8 МБ.' : 'The file must be smaller than 8 MB.');
+                          return;
+                        }
+                        try {
+                          const source = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Invalid image'));
+                            reader.onerror = () => reject(new Error('Could not read image'));
+                            reader.readAsDataURL(file);
+                          });
+                          const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+                            const element = new Image();
+                            element.onload = () => resolve(element);
+                            element.onerror = () => reject(new Error('Invalid image'));
+                            element.src = source;
+                          });
+                          const canvas = document.createElement('canvas');
+                          canvas.width = 256;
+                          canvas.height = 256;
+                          const context = canvas.getContext('2d');
+                          if (!context) throw new Error('Canvas is unavailable');
+                          const scale = Math.max(256 / image.width, 256 / image.height);
+                          const width = image.width * scale;
+                          const height = image.height * scale;
+                          context.drawImage(image, (256 - width) / 2, (256 - height) / 2, width, height);
+                          setSettings(old => ({ ...old, avatarDataUrl: canvas.toDataURL('image/jpeg', 0.82) }));
+                        } catch {
+                          window.alert(ru ? 'Не удалось загрузить изображение.' : 'Could not load the image.');
+                        }
+                      }} />
+                    </label>
+                    {settings.avatarDataUrl && <button type="button" className="btn" onClick={() => setSettings(old => ({ ...old, avatarDataUrl: null }))}>{ru ? 'Убрать фото' : 'Remove photo'}</button>}
+                  </div>
+                </div>
+
+                <label className="field">
+                  <span>{ru ? 'Email аккаунта' : 'Account email'}</span>
+                  <input value={email} readOnly />
+                </label>
 
                 <label className="field">
                   <span>{ru ? 'Ваше имя' : 'Your name'}</span>
@@ -175,11 +231,12 @@ export default function App() {
                   <span>{ru ? 'Сворачивать боковую панель' : 'Collapse sidebar'}</span>
                 </label>
 
-                <p className="muted">
-                  {ru
-                    ? 'Изменения сохраняются автоматически.'
-                    : 'Changes are saved automatically.'}
-                </p>
+                <div className="settings-account-actions">
+                  <p className="muted">{ru ? 'Изменения сохраняются автоматически.' : 'Changes are saved automatically.'}</p>
+                  <button type="button" className="btn" onClick={onLogout} disabled={logoutBusy}>
+                    {logoutBusy ? (ru ? 'Выход…' : 'Signing out…') : (ru ? 'Выйти из аккаунта' : 'Sign out')}
+                  </button>
+                </div>
               </section>
             </div>
           ) : (
