@@ -2,19 +2,21 @@ export type AppLanguage = 'ru' | 'en';
 export type AppTheme = 'light' | 'dark' | 'supabase';
 export type AppAccent = 'green' | 'indigo' | 'blue' | 'orange';
 export type AppDensity = 'comfortable' | 'compact';
+export type AppStyle = 'standard' | 'supabase' | 'minimal' | 'soft';
 export type UserSettings = {
   name: string;
   language: AppLanguage;
   theme: AppTheme;
   accent: AppAccent;
   density: AppDensity;
+  style: AppStyle;
   sidebarCollapsed: boolean;
 };
 
 const KEY = 'studentworkflow.settings.v1';
 const DEFAULT_SETTINGS: UserSettings = {
   name: 'Alex', language: 'en', theme: 'light',
-  accent: 'green', density: 'comfortable', sidebarCollapsed: false,
+  accent: 'green', density: 'comfortable', style: 'standard', sidebarCollapsed: false,
 };
 
 export function loadUserSettings(): UserSettings {
@@ -30,6 +32,7 @@ export function loadUserSettings(): UserSettings {
         theme: candidate.theme === 'dark' || candidate.theme === 'supabase' || candidate.theme === 'light' ? candidate.theme : DEFAULT_SETTINGS.theme,
         accent: candidate.accent === 'green' || candidate.accent === 'indigo' || candidate.accent === 'blue' || candidate.accent === 'orange' ? candidate.accent : DEFAULT_SETTINGS.accent,
         density: candidate.density === 'compact' || candidate.density === 'comfortable' ? candidate.density : DEFAULT_SETTINGS.density,
+        style: candidate.style === 'supabase' || candidate.style === 'minimal' || candidate.style === 'soft' || candidate.style === 'standard' ? candidate.style : DEFAULT_SETTINGS.style,
         sidebarCollapsed: typeof candidate.sidebarCollapsed === 'boolean' ? candidate.sidebarCollapsed : DEFAULT_SETTINGS.sidebarCollapsed,
       };
     }
