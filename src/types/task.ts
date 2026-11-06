@@ -1,4 +1,5 @@
 export type Priority = 'low' | 'medium' | 'high';
+export type TaskRepeatRule = 'none' | 'daily' | 'weekly' | 'monthly';
 
 /** Сохраняемый статус. «Overdue» не хранится, а вычисляется по дате. */
 export type StoredStatus = 'todo' | 'in_progress' | 'done';
@@ -14,6 +15,9 @@ export type Task = {
   status: StoredStatus;
   createdAt: string; // ISO-дата
   calendarEventId?: string;
+  repeat?: TaskRepeatRule;
+  repeatInterval?: number;
+  repeatUntil?: string;
 };
 
 export type NewTaskInput = {
@@ -22,4 +26,7 @@ export type NewTaskInput = {
   dueDate: string;
   priority: Priority;
   subject: string;
+  repeat: TaskRepeatRule;
+  repeatInterval: number;
+  repeatUntil?: string;
 };
