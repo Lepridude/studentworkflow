@@ -50,7 +50,7 @@ function storeSession(session: AuthSession | null) {
 export default function AuthGate() {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [ready, setReady] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register' | 'recover'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'recover' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -73,6 +73,22 @@ export default function AuthGate() {
     let active = true;
     async function initialize() {
       if (!isSupabaseConfigured) { setReady(true); return; }
+      const callback = new URLSearchParams(window.location.search);
+      const tokenHash = callback.get('token_hash');
+      const callbackType = callback.get('type');
+      if (tokenHash && (callbackType === 'signup' || callbackType === 'recovery')) {
+        try {
+          const verified = await supabaseAuth.verifyEmail(tokenHash, callbackType);
+          window.history.replaceState({}, document.title, window.location.pathname);
+          if (active) {
+            await activateSession(verified);
+            if (callbackType === 'recovery') setMode('reset');
+          }
+          return;
+        } catch (cause) {
+          if (active) setError(cause instanceof Error ? cause.message : 'Не удалось подтвердить ссылку.');
+        }
+      }
       const saved = readSession();
       if (!saved) { setReady(true); return; }
       try {
@@ -137,7 +153,15 @@ export default function AuthGate() {
     setNotice('');
     setBusy(true);
     try {
-      if (mode === 'recover') {
+      if (mode === 'reset') {
+        if (!session) throw new Error('Сессия восстановления недействительна. Запроси новую ссылку.');
+        await supabaseAuth.updatePassword(session.access_token, password);
+        storeSession(null);
+        setSession(null);
+        setPassword('');
+        setMode('login');
+        setNotice('Пароль изменён. Теперь войди с новым паролем.');
+      } else if (mode === 'recover') {
         await supabaseAuth.recover(email.trim());
         setNotice('Если аккаунт с таким email существует, на него отправлена ссылка для сброса пароля.');
       } else if (mode === 'register') {
@@ -172,6 +196,15 @@ export default function AuthGate() {
     return <AuthMessage />;
   }
   if (!ready) return <div className="auth-loading">StudentFlow</div>;
+  if (session && mode === 'reset') {
+    return <main className="auth-screen"><form className="auth-card" onSubmit={submit}>
+      <div className="auth-brand">StudentFlow</div><h1>Новый пароль</h1>
+      <p className="muted">Задай новый пароль для аккаунта.</p>
+      <label className="field"><span>Новый пароль</span><input type="password" autoComplete="new-password" minLength={8} required value={password} onChange={e => setPassword(e.target.value)} /></label>
+      {error && <p className="auth-error" role="alert">{error}</p>}
+      <button className="btn btn-primary auth-submit" disabled={busy}>Сохранить пароль</button>
+    </form></main>;
+  }
   if (session) {
     return <div className="authenticated-app">
       <div className="account-bar">
