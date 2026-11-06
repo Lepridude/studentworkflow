@@ -28,6 +28,10 @@ function readLocalWorkspace(): WorkspaceData {
   };
 }
 
+function clearLocalWorkspace() {
+  Object.values(DATA_KEYS).forEach(key => localStorage.removeItem(key));
+}
+
 function writeLocalWorkspace(data: WorkspaceData) {
   localStorage.setItem(DATA_KEYS.settings, JSON.stringify(data.settings));
   localStorage.setItem(DATA_KEYS.tasks, JSON.stringify(data.tasks));
@@ -59,13 +63,21 @@ export default function AuthGate() {
 
   const activateSession = useCallback(async (next: AuthSession) => {
     storeSession(next);
+    const previousOwner = localStorage.getItem('studentworkflow.workspace.owner.v1');
     const cloud = await loadWorkspace(next.user.id, next.access_token);
     if (cloud) {
       writeLocalWorkspace(cloud);
+    } else if (!previousOwner) {
+      // First account on this browser: migrate the existing local workspace.
+      await saveWorkspace(next.user.id, next.access_token, readLocalWorkspace());
+    } else if (previousOwner !== next.user.id) {
+      // Never copy another account's local data into a new account.
+      clearLocalWorkspace();
+      await saveWorkspace(next.user.id, next.access_token, readLocalWorkspace());
     } else {
-      // First login: preserve existing browser data and move it to the account.
       await saveWorkspace(next.user.id, next.access_token, readLocalWorkspace());
     }
+    localStorage.setItem('studentworkflow.workspace.owner.v1', next.user.id);
     setSession(next);
   }, []);
 
@@ -186,7 +198,10 @@ export default function AuthGate() {
   async function logout() {
     if (!session) return;
     setBusy(true);
+    try { await saveWorkspace(session.user.id, session.access_token, readLocalWorkspace()); } catch (cause) { console.error('StudentFlow final sync failed:', cause); }
     try { await supabaseAuth.signOut(session.access_token); } catch { /* Local logout must still work. */ }
+    clearLocalWorkspace();
+    localStorage.removeItem('studentworkflow.workspace.owner.v1');
     storeSession(null);
     setSession(null);
     setBusy(false);
