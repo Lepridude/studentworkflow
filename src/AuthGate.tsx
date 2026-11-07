@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import App from './App';
+import Icon from './components/Icon';
 import {
   isSupabaseConfigured, loadWorkspace, saveWorkspace, supabaseAuth,
   type AuthSession, type WorkspaceData,
@@ -57,6 +58,7 @@ export default function AuthGate() {
   const [mode, setMode] = useState<'login' | 'register' | 'recover' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -221,7 +223,7 @@ export default function AuthGate() {
     return <main className="auth-screen"><form className="auth-card" onSubmit={submit}>
       <div className="auth-brand">StudentFlow</div><h1>Новый пароль</h1>
       <p className="muted">Задай новый пароль для аккаунта.</p>
-      <label className="field"><span>Новый пароль</span><input type="password" autoComplete="new-password" minLength={8} required value={password} onChange={e => setPassword(e.target.value)} /></label>
+      <PasswordInput label="Новый пароль" autoComplete="new-password" minLength={8} required value={password} onChange={setPassword} visible={showPassword} onToggleVisibility={() => setShowPassword(value => !value)} />
       {error && <p className="auth-error" role="alert">{error}</p>}
       <button className="btn btn-primary auth-submit" disabled={busy}>Сохранить пароль</button>
     </form></main>;
@@ -239,7 +241,7 @@ export default function AuthGate() {
       <h1>{title}</h1>
       <p className="muted">Задачи, расписание и предметы будут доступны после входа с любого устройства.</p>
       <label className="field"><span>Email</span><input type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></label>
-      {mode !== 'recover' && <label className="field"><span>Пароль</span><input type="password" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} minLength={8} required value={password} onChange={e => setPassword(e.target.value)} /></label>}
+      {mode !== 'recover' && <PasswordInput label="Пароль" autoComplete={mode === 'register' ? 'new-password' : 'current-password'} minLength={8} required value={password} onChange={setPassword} visible={showPassword} onToggleVisibility={() => setShowPassword(value => !value)} />}
       {error && <p className="auth-error" role="alert">{error}</p>}
       {notice && <p className="auth-notice" role="status">{notice}</p>}
       <button className="btn btn-primary auth-submit" type="submit" disabled={busy}>{busy ? 'Подождите…' : mode === 'register' ? 'Зарегистрироваться' : mode === 'recover' ? 'Отправить ссылку' : 'Войти'}</button>
@@ -257,4 +259,46 @@ function AuthMessage() {
     <p className="muted">Аккаунты ещё не активированы. Добавь URL и публичный ключ Supabase в переменные окружения проекта.</p>
     <p className="auth-help">Нужны VITE_SUPABASE_URL и VITE_SUPABASE_ANON_KEY. Не используй service_role key в браузере.</p>
   </section></main>;
+}
+
+
+type PasswordInputProps = {
+  label: string;
+  autoComplete: string;
+  minLength?: number;
+  required?: boolean;
+  value: string;
+  onChange: (value: string) => void;
+  visible: boolean;
+  onToggleVisibility: () => void;
+};
+
+function PasswordInput({
+  label, autoComplete, minLength, required, value, onChange, visible, onToggleVisibility,
+}: PasswordInputProps) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <span className="auth-password-control">
+        <input
+          type={visible ? 'text' : 'password'}
+          autoComplete={autoComplete}
+          minLength={minLength}
+          required={required}
+          value={value}
+          onChange={event => onChange(event.target.value)}
+        />
+        <button
+          className="auth-password-toggle"
+          type="button"
+          aria-label={visible ? 'Скрыть пароль' : 'Показать пароль'}
+          aria-pressed={visible}
+          title={visible ? 'Скрыть пароль' : 'Показать пароль'}
+          onClick={onToggleVisibility}
+        >
+          <Icon name={visible ? 'eyeOff' : 'eye'} size={19} />
+        </button>
+      </span>
+    </label>
+  );
 }
