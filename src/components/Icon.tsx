@@ -11,7 +11,9 @@ export type IconName =
   | 'alert'
   | 'list'
   | 'trash'
-  | 'close';
+  | 'close'
+  | 'eye'
+  | 'eyeOff';
 
 const PATHS: Record<IconName, string> = {
   logo: 'M4 6.5 12 3l8 3.5v5c0 4.5-3.2 8.2-8 9.5-4.8-1.3-8-5-8-9.5v-5Zm4.5 5 2.5 2.5 4.5-4.5',
@@ -28,6 +30,8 @@ const PATHS: Record<IconName, string> = {
   list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
   trash: 'M5 7h14M10 7V4h4v3m-8 0 1 13h10l1-13M10 11v6m4-6v6',
   close: 'M6 6l12 12M18 6 6 18',
+  eye: 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Zm10-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
+  eyeOff: 'm3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A11 11 0 0 1 12 5c6.4 0 10 7 10 7a16 16 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.6 7 10 7a10.8 10.8 0 0 0 4.1-.8'
 };
 
 type Props = { name: IconName; size?: number };
